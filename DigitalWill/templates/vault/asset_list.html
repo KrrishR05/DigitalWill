@@ -1,0 +1,153 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}My Assets — Digital Will{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+
+  <!-- ══ Page Header ══ -->
+  <div class="dw-page-header d-flex align-items-center justify-content-between flex-wrap gap-2 mb-4">
+    <div>
+      <h2 class="mb-1"><i class="bi bi-safe2 text-warning me-2"></i>My Assets</h2>
+      <p class="text-muted mb-0 small">All your encrypted digital assets in one place.</p>
+    </div>
+    <a href="{% url 'vault:asset_add' %}" class="btn btn-warning fw-semibold dw-btn-glow">
+      <i class="bi bi-plus-circle me-2"></i>Add Asset
+    </a>
+  </div>
+
+  <!-- ══ Filter Tabs ══ -->
+  <ul class="nav nav-pills dw-nav-pills mb-4 gap-2" id="assetTabs">
+    <li class="nav-item">
+      <button class="nav-link active" data-filter="all">
+        <i class="bi bi-grid me-1"></i>All
+        <span class="badge bg-secondary ms-1">{{ assets.count }}</span>
+      </button>
+    </li>
+    <li class="nav-item">
+      <button class="nav-link" data-filter="password">
+        <i class="bi bi-key-fill cat-password me-1"></i>Passwords
+        <span class="badge ms-1" style="background:rgba(245,166,35,.2);color:var(--dw-amber);">{{ category_counts.password }}</span>
+      </button>
+    </li>
+    <li class="nav-item">
+      <button class="nav-link" data-filter="document">
+        <i class="bi bi-file-earmark-text-fill cat-document me-1"></i>Documents
+        <span class="badge ms-1" style="background:rgba(77,184,255,.2);color:#4db8ff;">{{ category_counts.document }}</span>
+      </button>
+    </li>
+    <li class="nav-item">
+      <button class="nav-link" data-filter="note">
+        <i class="bi bi-journal-text cat-note me-1"></i>Notes
+        <span class="badge ms-1" style="background:rgba(130,255,130,.2);color:#82ff82;">{{ category_counts.note }}</span>
+      </button>
+    </li>
+  </ul>
+
+  <!-- ══ Assets Grid ══ -->
+  {% if assets %}
+  <div class="row g-3" id="assetGrid">
+    {% for asset in assets %}
+    <div class="col-md-6 col-lg-4 asset-card-wrapper" data-category="{{ asset.category }}">
+      <div class="dw-card h-100 dw-asset-card">
+        <!-- Category Banner -->
+        <div class="dw-asset-banner dw-asset-banner--{{ asset.category }}"></div>
+
+        <div class="p-4">
+          <!-- Icon + Category -->
+          <div class="d-flex align-items-center justify-content-between mb-3">
+            <div class="d-flex align-items-center gap-2">
+              {% if asset.category == 'password' %}
+                <div class="dw-cat-icon bg-warning bg-opacity-10">
+                  <i class="bi bi-key-fill cat-password"></i>
+                </div>
+              {% elif asset.category == 'document' %}
+                <div class="dw-cat-icon" style="background:rgba(77,184,255,.1);">
+                  <i class="bi bi-file-earmark-text-fill cat-document"></i>
+                </div>
+              {% else %}
+                <div class="dw-cat-icon" style="background:rgba(130,255,130,.1);">
+                  <i class="bi bi-journal-text cat-note"></i>
+                </div>
+              {% endif %}
+              <span class="badge bg-secondary text-capitalize" style="font-size:.7rem;">{{ asset.category }}</span>
+            </div>
+            <span class="text-muted" style="font-size:.72rem;">{{ asset.created_at|date:"d M Y" }}</span>
+          </div>
+
+          <!-- Title -->
+          <h6 class="fw-bold mb-1 text-truncate">{{ asset.title }}</h6>
+          <p class="text-muted mb-0" style="font-size:.78rem;">
+            <i class="bi bi-lock-fill me-1 text-warning"></i>Content is encrypted
+          </p>
+        </div>
+
+        <!-- Actions Footer -->
+        <div class="dw-card-footer d-flex gap-2 p-3">
+          <a href="{% url 'vault:asset_detail' asset.pk %}"
+             class="btn btn-sm btn-outline-light flex-grow-1"
+             title="View">
+            <i class="bi bi-eye me-1"></i>View
+          </a>
+          <a href="{% url 'vault:asset_edit' asset.pk %}"
+             class="btn btn-sm btn-outline-warning"
+             title="Edit">
+            <i class="bi bi-pencil"></i>
+          </a>
+          <a href="{% url 'vault:asset_delete' asset.pk %}"
+             class="btn btn-sm btn-outline-danger"
+             title="Delete">
+            <i class="bi bi-trash"></i>
+          </a>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  <!-- No results after filter -->
+  <div id="noResults" class="text-center py-5 d-none">
+    <i class="bi bi-search text-muted" style="font-size:3rem;"></i>
+    <p class="text-muted mt-3">No assets in this category.</p>
+  </div>
+
+  {% else %}
+  <!-- Empty State -->
+  <div class="text-center py-5">
+    <i class="bi bi-safe2 text-muted" style="font-size:5rem;opacity:.3;"></i>
+    <h5 class="mt-4 fw-bold">Your vault is empty</h5>
+    <p class="text-muted mb-4">Start by adding a password, document, or personal note.</p>
+    <a href="{% url 'vault:asset_add' %}" class="btn btn-warning btn-lg fw-semibold dw-btn-glow">
+      <i class="bi bi-plus-circle me-2"></i>Add Your First Asset
+    </a>
+  </div>
+  {% endif %}
+
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  // ── Category filter tabs ──────────────────────────────
+  document.querySelectorAll('[data-filter]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      // Active state
+      document.querySelectorAll('[data-filter]').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+
+      const filter  = btn.dataset.filter;
+      const cards   = document.querySelectorAll('.asset-card-wrapper');
+      let   visible = 0;
+
+      cards.forEach(card => {
+        const show = filter === 'all' || card.dataset.category === filter;
+        card.style.display = show ? '' : 'none';
+        if (show) visible++;
+      });
+
+      document.getElementById('noResults').classList.toggle('d-none', visible > 0);
+    });
+  });
+</script>
+{% endblock %}

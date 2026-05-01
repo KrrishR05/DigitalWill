@@ -1,0 +1,104 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Verify Your Identity — Digital Will{% endblock %}
+
+{% block content %}
+<div class="dw-form-section">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-md-5 col-lg-4">
+
+        <!-- Logo / Icon -->
+        <div class="text-center mb-4">
+          <div class="dw-icon-circle mx-auto mb-3"
+               style="width:80px;height:80px;background:linear-gradient(135deg,var(--dw-amber),#ff9a3c);border:none;">
+            <i class="bi bi-shield-lock-fill" style="font-size:2rem;color:#000;"></i>
+          </div>
+          <h3 class="fw-bold mb-1">Verify Your Identity</h3>
+          <p class="text-muted small">
+            You've been named as a trusted nominee by
+            <strong class="text-white">{{ owner }}</strong>.
+          </p>
+        </div>
+
+        <!-- Instruction Card -->
+        <div class="dw-card mb-4">
+          <div class="p-4 text-center">
+            <i class="bi bi-envelope-open-fill text-warning fs-2 mb-2 d-block"></i>
+            <p class="text-muted small mb-0">
+              Check the email sent to <strong class="text-white">{{ nominee.email }}</strong>.<br>
+              It contains a <strong class="text-warning">6-digit OTP</strong>. Enter it below.
+            </p>
+          </div>
+        </div>
+
+        <!-- OTP Form -->
+        <div class="dw-card">
+          <div class="dw-card-header text-center">
+            <h6 class="mb-0 fw-semibold">
+              <i class="bi bi-key-fill text-warning me-2"></i>Enter Your OTP
+            </h6>
+          </div>
+          <div class="p-4">
+            {% if error %}
+            <div class="alert dw-alert border-danger mb-4" style="border-left:4px solid #ff4444;">
+              <i class="bi bi-x-circle-fill text-danger me-2"></i>{{ error }}
+            </div>
+            {% endif %}
+
+            <form method="post" novalidate>
+              {% csrf_token %}
+              <div class="mb-4">
+                <label class="form-label" for="id_otp">
+                  <i class="bi bi-123 me-1 text-warning"></i>One-Time Password
+                </label>
+                <!-- Large OTP input with letter-spacing -->
+                <input
+                  type="text"
+                  id="id_otp"
+                  name="otp"
+                  class="form-control text-center fw-bold fs-4"
+                  style="letter-spacing:.5rem;font-family:monospace;"
+                  maxlength="6"
+                  placeholder="● ● ● ● ● ●"
+                  autocomplete="one-time-code"
+                  inputmode="numeric"
+                  pattern="[0-9]{6}"
+                  autofocus
+                  required>
+                <div class="form-text text-center text-muted" style="font-size:.75rem;">
+                  Enter the 6-digit OTP from your email.
+                </div>
+              </div>
+
+              <button type="submit" id="btn_verify_otp"
+                      class="btn btn-warning fw-bold w-100 btn-lg dw-btn-glow">
+                <i class="bi bi-shield-check me-2"></i>Verify &amp; Access Assets
+              </button>
+            </form>
+          </div>
+        </div>
+
+        <!-- Footer note -->
+        <p class="text-center text-muted mt-4" style="font-size:.75rem;">
+          <i class="bi bi-lock-fill me-1"></i>
+          Your access is secured by a unique one-time password.<br>
+          This link and OTP are personal — do not share them.
+        </p>
+
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+// Auto-format OTP input: digits only, space after every 3
+const otpInput = document.getElementById('id_otp');
+otpInput.addEventListener('input', () => {
+  otpInput.value = otpInput.value.replace(/\D/g, '').slice(0, 6);
+});
+</script>
+{% endblock %}

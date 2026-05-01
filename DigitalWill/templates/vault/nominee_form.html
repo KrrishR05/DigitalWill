@@ -1,0 +1,100 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Add Nominee — Digital Will{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="row justify-content-center">
+    <div class="col-lg-7 col-md-9">
+
+      <!-- Breadcrumb -->
+      <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb dw-breadcrumb">
+          <li class="breadcrumb-item">
+            <a href="{% url 'vault:nominee_list' %}" class="text-warning text-decoration-none">Nominees</a>
+          </li>
+          <li class="breadcrumb-item active text-muted">Add Nominee</li>
+        </ol>
+      </nav>
+
+      <!-- Header -->
+      <div class="dw-page-header mb-4">
+        <h2 class="mb-1">
+          <i class="bi bi-person-plus-fill text-warning me-2"></i>Add Nominee
+        </h2>
+        <p class="text-muted mb-0 small">
+          A nominee will receive access to your assigned assets only after the inactivity release workflow triggers.
+        </p>
+      </div>
+
+      <!-- Info Box -->
+      <div class="alert mb-4" style="background:rgba(77,184,255,.07);border:1px solid rgba(77,184,255,.2);border-radius:10px;">
+        <div class="d-flex gap-2">
+          <i class="bi bi-info-circle-fill text-info fs-5 mt-1"></i>
+          <div>
+            <strong class="text-info d-block" style="font-size:.85rem;">How nominees work</strong>
+            <span class="text-muted" style="font-size:.78rem;">
+              After you are inactive beyond your threshold, nominees will be notified by email and must
+              verify their identity via OTP before viewing the assets assigned to them.
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Form Card -->
+      <div class="dw-form-card">
+        <form method="post" novalidate>
+          {% csrf_token %}
+
+          <!-- Name -->
+          <div class="mb-3">
+            <label class="form-label" for="id_name">
+              <i class="bi bi-person me-1 text-warning"></i>Full Name
+            </label>
+            <input type="text"
+                   name="name"
+                   id="id_name"
+                   class="form-control {% if form.name.errors %}is-invalid{% endif %}"
+                   placeholder="e.g. John Smith"
+                   value="{{ form.name.value|default:'' }}"
+                   autofocus required />
+            {% if form.name.errors %}
+            <div class="invalid-feedback">{{ form.name.errors.0 }}</div>
+            {% endif %}
+          </div>
+
+          <!-- Email -->
+          <div class="mb-4">
+            <label class="form-label" for="id_email">
+              <i class="bi bi-envelope me-1 text-warning"></i>Email Address
+            </label>
+            <input type="email"
+                   name="email"
+                   id="id_email"
+                   class="form-control {% if form.email.errors %}is-invalid{% endif %}"
+                   placeholder="nominee@example.com"
+                   value="{{ form.email.value|default:'' }}"
+                   required />
+            {% if form.email.errors %}
+            <div class="invalid-feedback">{{ form.email.errors.0 }}</div>
+            {% endif %}
+            <div class="form-text text-muted" style="font-size:.75rem;">
+              This email will receive a release notification and OTP when the workflow triggers.
+            </div>
+          </div>
+
+          <!-- Actions -->
+          <div class="d-flex gap-3">
+            <button type="submit" id="btn_add_nominee" class="btn btn-warning fw-semibold px-4 dw-btn-glow">
+              <i class="bi bi-person-check me-2"></i>Add Nominee
+            </button>
+            <a href="{% url 'vault:nominee_list' %}" class="btn btn-outline-secondary px-4">Cancel</a>
+          </div>
+        </form>
+      </div>
+
+    </div>
+  </div>
+</div>
+{% endblock %}

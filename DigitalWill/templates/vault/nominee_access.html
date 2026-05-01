@@ -1,0 +1,141 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Asset Access — Digital Will{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+
+  <!-- ══ Header ══════════════════════════════════════════ -->
+  <div class="dw-page-header mb-4">
+    <div class="d-flex align-items-center gap-3 flex-wrap">
+      <div class="dw-avatar" style="width:56px;height:56px;font-size:1.2rem;">
+        {{ nominee.name|first|upper }}
+      </div>
+      <div>
+        <h2 class="fw-bold mb-1">
+          <i class="bi bi-safe2-fill text-warning me-2"></i>Asset Access
+        </h2>
+        <p class="text-muted mb-0 small">
+          Welcome, <strong class="text-white">{{ nominee.name }}</strong>.
+          You are viewing assets shared by
+          <strong class="text-warning">{{ owner }}</strong>.
+        </p>
+      </div>
+      <!-- Verified badge -->
+      <span class="ms-auto badge dw-badge-active px-3 py-2">
+        <i class="bi bi-shield-fill-check me-1"></i>Identity Verified
+      </span>
+    </div>
+  </div>
+
+  <!-- ══ Final Message ════════════════════════════════════ -->
+  {% if final_message %}
+  <div class="dw-card mb-4" style="border-left:4px solid var(--dw-amber);">
+    <div class="dw-card-header d-flex align-items-center gap-2">
+      <i class="bi bi-envelope-heart-fill text-warning fs-5"></i>
+      <h6 class="mb-0 fw-semibold">A Message from {{ owner }}</h6>
+    </div>
+    <div class="p-4">
+      <blockquote class="mb-0" style="border-left:3px solid var(--dw-amber);padding-left:1.25rem;">
+        <p class="fst-italic text-muted mb-0" style="line-height:1.8;white-space:pre-wrap;">{{ final_message }}</p>
+      </blockquote>
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- ══ Assets ═══════════════════════════════════════════ -->
+  {% if asset_data %}
+  <div class="mb-3">
+    <h5 class="fw-semibold">
+      <i class="bi bi-box-seam text-warning me-2"></i>
+      Your Assigned Assets <span class="text-muted fw-normal fs-6">({{ asset_data|length }} item{{ asset_data|length|pluralize }})</span>
+    </h5>
+  </div>
+
+  <div class="row g-4">
+    {% for item in asset_data %}
+    {% with asset=item.asset %}
+    <div class="col-md-6 col-lg-4">
+      <div class="dw-card dw-asset-card h-100">
+        <!-- Category colour bar -->
+        <div class="dw-asset-banner dw-asset-banner--{{ asset.category }}"></div>
+
+        <div class="p-3">
+          <!-- Icon + Title -->
+          <div class="d-flex align-items-center gap-3 mb-3">
+            <div class="dw-cat-icon
+              {% if asset.category == 'password' %}dw-cat-icon-lg--password{% elif asset.category == 'document' %}dw-cat-icon-lg--document{% else %}dw-cat-icon-lg--note{% endif %}">
+              {% if asset.category == 'password' %}<i class="bi bi-key-fill"></i>
+              {% elif asset.category == 'document' %}<i class="bi bi-file-earmark-text-fill"></i>
+              {% else %}<i class="bi bi-journal-text"></i>{% endif %}
+            </div>
+            <div>
+              <div class="fw-semibold">{{ asset.title }}</div>
+              <span class="badge bg-secondary text-capitalize" style="font-size:.7rem;">{{ asset.category }}</span>
+            </div>
+          </div>
+
+          <!-- Content -->
+          {% if item.file_url %}
+            <!-- Downloadable document -->
+            <div class="rounded-3 p-3 text-center" style="background:rgba(77,184,255,.07);border:1px solid rgba(77,184,255,.2);">
+              <i class="bi bi-file-earmark-arrow-down fs-2 text-info d-block mb-2"></i>
+              <p class="text-muted small mb-2">This asset is a file.</p>
+              <a href="{{ item.file_url }}" class="btn btn-info btn-sm fw-semibold" download style="color:#000;">
+                <i class="bi bi-download me-1"></i>Download File
+              </a>
+            </div>
+
+          {% elif item.decrypted %}
+            <!-- Decrypted text content -->
+            {% if asset.category == 'password' %}
+              <div class="rounded-3 p-3" style="background:rgba(245,166,35,.06);border:1px solid rgba(245,166,35,.15);">
+                <div class="text-muted" style="font-size:.7rem;margin-bottom:.4rem;">
+                  <i class="bi bi-lock-fill me-1 text-warning"></i>PASSWORD
+                </div>
+                <div class="dw-content-box" style="font-size:.95rem;letter-spacing:.05rem;">{{ item.decrypted }}</div>
+              </div>
+            {% else %}
+              <div class="dw-content-box">{{ item.decrypted }}</div>
+            {% endif %}
+
+          {% else %}
+            <div class="text-center py-3 text-muted small">
+              <i class="bi bi-question-circle d-block fs-3 mb-2"></i>
+              No content available.
+            </div>
+          {% endif %}
+        </div>
+
+        <!-- Footer: created date -->
+        <div class="dw-card-footer px-3 py-2 d-flex align-items-center gap-2" style="font-size:.72rem;color:var(--dw-muted);">
+          <i class="bi bi-calendar3"></i>
+          Added {{ asset.created_at|date:"d M Y" }}
+        </div>
+      </div>
+    </div>
+    {% endwith %}
+    {% endfor %}
+  </div>
+
+  {% else %}
+  <!-- No assets assigned -->
+  <div class="text-center py-5">
+    <i class="bi bi-safe2 text-muted" style="font-size:4rem;opacity:.3;"></i>
+    <h5 class="mt-4 fw-bold">No Assets Assigned</h5>
+    <p class="text-muted">
+      {{ owner }} has not yet assigned any specific assets to you.<br>
+      Please contact them directly or check again later.
+    </p>
+  </div>
+  {% endif %}
+
+  <!-- ══ Footer ════════════════════════════════════════════ -->
+  <div class="text-center mt-5 text-muted" style="font-size:.75rem;">
+    <i class="bi bi-shield-lock me-1"></i>
+    This page is secured by Digital Will Platform. All data is encrypted at rest.
+  </div>
+
+</div>
+{% endblock %}

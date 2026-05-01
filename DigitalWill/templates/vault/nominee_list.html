@@ -1,0 +1,100 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Nominees — Digital Will{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+
+  <!-- ══ Header ══ -->
+  <div class="dw-page-header d-flex align-items-center justify-content-between flex-wrap gap-2 mb-4">
+    <div>
+      <h2 class="mb-1"><i class="bi bi-people-fill text-warning me-2"></i>My Nominees</h2>
+      <p class="text-muted mb-0 small">People who will receive access to your assets after inactivity.</p>
+    </div>
+    <a href="{% url 'vault:nominee_add' %}" class="btn btn-warning fw-semibold dw-btn-glow">
+      <i class="bi bi-person-plus me-2"></i>Add Nominee
+    </a>
+  </div>
+
+  {% if nominees %}
+  <!-- ══ Nominees Grid ══ -->
+  <div class="row g-4">
+    {% for nominee in nominees %}
+    <div class="col-md-6 col-lg-4">
+      <div class="dw-card h-100">
+        <div class="p-4">
+          <!-- Avatar + Info -->
+          <div class="d-flex align-items-center gap-3 mb-4">
+            <div class="dw-avatar dw-avatar-lg">{{ nominee.name|first|upper }}</div>
+            <div class="min-w-0">
+              <h6 class="fw-bold mb-1 text-truncate">{{ nominee.name }}</h6>
+              <div class="text-muted small text-truncate">
+                <i class="bi bi-envelope me-1"></i>{{ nominee.email }}
+              </div>
+              <div class="text-muted" style="font-size:.72rem;">
+                Added {{ nominee.created_at|date:"d M Y" }}
+              </div>
+            </div>
+          </div>
+
+          <!-- Assigned Assets -->
+          <div class="mb-3">
+            <div class="small text-muted fw-semibold mb-2">
+              <i class="bi bi-safe2 me-1 text-warning"></i>Assigned Assets
+            </div>
+            {% with assigned=nominee.assigned_assets.all %}
+              {% if assigned %}
+                <div class="d-flex flex-wrap gap-1">
+                  {% for asset in assigned|slice:":4" %}
+                    <span class="badge bg-secondary text-capitalize" style="font-size:.7rem;">
+                      {% if asset.category == 'password' %}🔑{% elif asset.category == 'document' %}📄{% else %}📝{% endif %}
+                      {{ asset.title|truncatechars:18 }}
+                    </span>
+                  {% endfor %}
+                  {% if assigned.count > 4 %}
+                    <span class="badge" style="background:var(--dw-surface-2);color:var(--dw-muted);font-size:.7rem;">
+                      +{{ assigned.count|add:"-4" }} more
+                    </span>
+                  {% endif %}
+                </div>
+              {% else %}
+                <span class="text-muted" style="font-size:.78rem;">No assets assigned yet.</span>
+              {% endif %}
+            {% endwith %}
+          </div>
+
+          <!-- OTP Verified Badge -->
+          {% if nominee.otp_verified %}
+          <span class="badge mb-3" style="background:rgba(25,200,100,.15);color:#19c864;border:1px solid rgba(25,200,100,.3);">
+            <i class="bi bi-shield-check me-1"></i>Identity Verified
+          </span>
+          {% endif %}
+        </div>
+
+        <!-- Footer Actions -->
+        <div class="dw-card-footer d-flex gap-2 p-3">
+          <a href="{% url 'vault:nominee_delete' nominee.pk %}"
+             class="btn btn-sm btn-outline-danger w-100">
+            <i class="bi bi-trash me-1"></i>Remove Nominee
+          </a>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  {% else %}
+  <!-- ══ Empty State ══ -->
+  <div class="text-center py-5">
+    <i class="bi bi-people text-muted" style="font-size:5rem;opacity:.3;"></i>
+    <h5 class="mt-4 fw-bold">No nominees yet</h5>
+    <p class="text-muted mb-4">Add trusted people who will receive access to your assets.</p>
+    <a href="{% url 'vault:nominee_add' %}" class="btn btn-warning btn-lg fw-semibold dw-btn-glow">
+      <i class="bi bi-person-plus me-2"></i>Add Your First Nominee
+    </a>
+  </div>
+  {% endif %}
+
+</div>
+{% endblock %}
