@@ -1,0 +1,348 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Dashboard — Digital Will{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+
+  <!-- ══ Page Header ══════════════════════════════════════ -->
+  <div class="dw-page-header d-flex align-items-center justify-content-between flex-wrap gap-2 mb-4">
+    <div>
+      <h2 class="mb-1">
+        <i class="bi bi-speedometer2 text-warning me-2"></i>Dashboard
+      </h2>
+      <p class="text-muted mb-0 small">
+        Welcome back, <strong class="text-white">{{ user.username }}</strong> —
+        Last login:
+        {% if last_login %}
+          <span class="text-warning">{{ last_login|date:"d M Y, H:i" }}</span>
+        {% else %}
+          <span class="text-muted">First session</span>
+        {% endif %}
+      </p>
+    </div>
+
+    <!-- 3-State Account Status Badge -->
+    {% if inactivity_status == 'triggered' %}
+      <span class="px-3 py-2 rounded-pill fw-semibold small dw-badge-triggered">
+        <i class="bi bi-alarm-fill me-1"></i>Triggered — {{ days_inactive }}d inactive
+      </span>
+    {% elif inactivity_status == 'at_risk' %}
+      <span class="px-3 py-2 rounded-pill fw-semibold small dw-badge-risk">
+        <i class="bi bi-exclamation-triangle-fill me-1"></i>At Risk — {{ days_inactive }}d inactive
+      </span>
+    {% else %}
+      <span class="px-3 py-2 rounded-pill fw-semibold small dw-badge-active">
+        <i class="bi bi-shield-check-fill me-1"></i>Account Active
+      </span>
+    {% endif %}
+  </div>
+
+  <!-- ══ Stat Cards ═══════════════════════════════════════ -->
+  <div class="row g-3 mb-4">
+    <!-- Passwords -->
+    <div class="col-6 col-lg-3">
+      <div class="dw-stat">
+        <i class="bi bi-key-fill text-warning mb-2 d-block fs-3"></i>
+        <div class="dw-stat-number">{{ category_counts.password }}</div>
+        <div class="text-muted small mt-1">Passwords</div>
+      </div>
+    </div>
+    <!-- Documents -->
+    <div class="col-6 col-lg-3">
+      <div class="dw-stat">
+        <i class="bi bi-file-earmark-text-fill text-info mb-2 d-block fs-3"></i>
+        <div class="dw-stat-number text-info">{{ category_counts.document }}</div>
+        <div class="text-muted small mt-1">Documents</div>
+      </div>
+    </div>
+    <!-- Notes -->
+    <div class="col-6 col-lg-3">
+      <div class="dw-stat">
+        <i class="bi bi-journal-text text-success mb-2 d-block fs-3"></i>
+        <div class="dw-stat-number text-success">{{ category_counts.note }}</div>
+        <div class="text-muted small mt-1">Notes</div>
+      </div>
+    </div>
+    <!-- Nominees -->
+    <div class="col-6 col-lg-3">
+      <div class="dw-stat">
+        <i class="bi bi-people-fill text-danger mb-2 d-block fs-3"></i>
+        <div class="dw-stat-number text-danger">{{ nominees.count }}</div>
+        <div class="text-muted small mt-1">Nominees</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ Main Content Row ══════════════════════════════════ -->
+  <div class="row g-4">
+
+    <!-- Left: Quick Actions + Nominees -->
+    <div class="col-lg-4">
+
+      <!-- Quick Actions -->
+      <div class="dw-card mb-4">
+        <div class="dw-card-header">
+          <h6 class="mb-0 fw-semibold"><i class="bi bi-lightning-fill text-warning me-2"></i>Quick Actions</h6>
+        </div>
+        <div class="p-3 d-grid gap-2">
+          <a href="{% url 'vault:asset_add' %}" class="btn btn-warning btn-sm fw-semibold">
+            <i class="bi bi-plus-circle me-2"></i>Add New Asset
+          </a>
+          <a href="{% url 'vault:nominee_add' %}" class="btn btn-outline-light btn-sm">
+            <i class="bi bi-person-plus me-2"></i>Add Nominee
+          </a>
+          <a href="{% url 'vault:asset_list' %}" class="btn btn-outline-light btn-sm">
+            <i class="bi bi-safe2 me-2"></i>View All Assets
+          </a>
+          <a href="{% url 'vault:settings' %}" class="btn btn-outline-light btn-sm">
+            <i class="bi bi-gear me-2"></i>Settings
+          </a>
+        </div>
+      </div>
+
+      <!-- Nominees List -->
+      <div class="dw-card">
+        <div class="dw-card-header d-flex justify-content-between align-items-center">
+          <h6 class="mb-0 fw-semibold"><i class="bi bi-people-fill text-danger me-2"></i>Nominees</h6>
+          <a href="{% url 'vault:nominee_list' %}" class="text-muted small text-decoration-none">View all →</a>
+        </div>
+        <div class="p-3">
+          {% if nominees %}
+            {% for nominee in nominees|slice:":5" %}
+            <div class="d-flex align-items-center gap-3 mb-3">
+              <div class="dw-avatar">{{ nominee.name|first|upper }}</div>
+              <div class="flex-grow-1 min-w-0">
+                <div class="fw-semibold small text-truncate">{{ nominee.name }}</div>
+                <div class="text-muted" style="font-size:.75rem;">{{ nominee.email }}</div>
+              </div>
+              {% if nominee.otp_verified %}
+                <span class="badge" style="background:rgba(25,200,100,.15);color:#19c864;font-size:.65rem;">Verified</span>
+              {% endif %}
+            </div>
+            {% endfor %}
+          {% else %}
+            <div class="text-center py-3">
+              <i class="bi bi-person-x text-muted fs-2 d-block mb-2"></i>
+              <p class="text-muted small mb-2">No nominees yet.</p>
+              <a href="{% url 'vault:nominee_add' %}" class="btn btn-sm btn-outline-warning">Add Nominee</a>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Right: Recent Assets + Activity Log -->
+    <div class="col-lg-8">
+
+      <!-- Recent Assets -->
+      <div class="dw-card mb-4">
+        <div class="dw-card-header d-flex justify-content-between align-items-center">
+          <h6 class="mb-0 fw-semibold"><i class="bi bi-safe2 text-warning me-2"></i>Recent Assets</h6>
+          <a href="{% url 'vault:asset_list' %}" class="text-muted small text-decoration-none">View all →</a>
+        </div>
+
+        {% if assets %}
+        <div class="table-responsive">
+          <table class="table dw-table mb-0">
+            <thead>
+              <tr>
+                <th>Title</th>
+                <th>Category</th>
+                <th>Added</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for asset in assets|slice:":6" %}
+              <tr>
+                <td class="fw-semibold">
+                  {% if asset.category == 'password' %}<i class="bi bi-key-fill cat-password me-2"></i>
+                  {% elif asset.category == 'document' %}<i class="bi bi-file-earmark-text-fill cat-document me-2"></i>
+                  {% else %}<i class="bi bi-journal-text cat-note me-2"></i>{% endif %}
+                  {{ asset.title }}
+                </td>
+                <td><span class="badge bg-secondary text-capitalize">{{ asset.category }}</span></td>
+                <td class="text-muted small">{{ asset.created_at|date:"d M Y" }}</td>
+                <td>
+                  <a href="{% url 'vault:asset_detail' asset.pk %}" class="btn btn-outline-light btn-sm py-0 px-2">
+                    <i class="bi bi-eye"></i>
+                  </a>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% else %}
+        <div class="text-center py-5">
+          <i class="bi bi-safe2 text-muted" style="font-size:3rem;"></i>
+          <p class="text-muted mt-3 mb-2">Your vault is empty.</p>
+          <a href="{% url 'vault:asset_add' %}" class="btn btn-warning btn-sm fw-semibold">
+            <i class="bi bi-plus-circle me-2"></i>Add Your First Asset
+          </a>
+        </div>
+        {% endif %}
+      </div>
+
+      <!-- ══ Account & Inactivity Status Card ══════════════════════════════ -->
+      <div class="dw-card dw-card--{{ inactivity_status }} mb-4">
+        <div class="dw-card-header d-flex justify-content-between align-items-center">
+          <h6 class="mb-0 fw-semibold">
+            {% if inactivity_status == 'triggered' %}
+              <i class="bi bi-activity text-danger me-2"></i>
+            {% elif inactivity_status == 'at_risk' %}
+              <i class="bi bi-activity text-warning me-2"></i>
+            {% else %}
+              <i class="bi bi-activity text-success me-2"></i>
+            {% endif %}
+            Inactivity Monitor
+          </h6>
+          <!-- Current status pill -->
+          {% if inactivity_status == 'triggered' %}
+            <span class="badge rounded-pill dw-badge-triggered">🔴 Triggered</span>
+          {% elif inactivity_status == 'at_risk' %}
+            <span class="badge rounded-pill dw-badge-risk">🟡 At Risk</span>
+          {% else %}
+            <span class="badge rounded-pill dw-badge-active">🟢 Active</span>
+          {% endif %}
+        </div>
+
+        <div class="p-3">
+
+          <!-- Last Login Row -->
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <span class="text-muted small"><i class="bi bi-box-arrow-in-right me-1"></i>Last Login</span>
+            <span class="fw-semibold small">
+              {% if last_login %}
+                {{ last_login|date:"d M Y, H:i" }}
+              {% else %}
+                <em class="text-muted">Not recorded</em>
+              {% endif %}
+            </span>
+          </div>
+
+          <!-- Days Inactive Row -->
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <span class="text-muted small"><i class="bi bi-hourglass-split me-1"></i>Days Since Login</span>
+            {% if inactivity_status == 'triggered' %}
+              <span class="fw-semibold small text-danger">{{ days_inactive }} day{{ days_inactive|pluralize }}</span>
+            {% elif inactivity_status == 'at_risk' %}
+              <span class="fw-semibold small text-warning">{{ days_inactive }} day{{ days_inactive|pluralize }}</span>
+            {% else %}
+              <span class="fw-semibold small text-success">{{ days_inactive }} day{{ days_inactive|pluralize }}</span>
+            {% endif %}
+          </div>
+
+          <!-- Threshold Row -->
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <span class="text-muted small"><i class="bi bi-calendar-check me-1"></i>Inactivity Threshold</span>
+            <span class="fw-semibold small">{{ threshold }} days</span>
+          </div>
+
+          <!-- Progress Bar — width set via data attribute + inline script to avoid Django tags in style= -->
+          <div class="mb-1" style="font-size:.7rem;color:#888;">Progress to threshold</div>
+          <div class="progress mb-3" style="height:6px;background:rgba(255,255,255,.08);">
+            <div class="progress-bar dw-progress-{{ inactivity_status }}"
+                 id="inactivity-bar"
+                 role="progressbar"
+                 data-pct="{% widthratio days_inactive threshold 100 %}"
+                 aria-valuenow="{{ days_inactive }}"
+                 aria-valuemin="0"
+                 aria-valuemax="{{ threshold }}">
+            </div>
+          </div>
+          <script>document.getElementById('inactivity-bar').style.width=document.getElementById('inactivity-bar').dataset.pct+'%';</script>
+
+          <!-- Triggered: show release request details -->
+          {% if inactivity_status == 'triggered' %}
+          <div class="rounded-3 p-3 mt-2"
+               style="background:rgba(255,68,68,.07);border:1px solid rgba(255,68,68,.2);">
+            <div class="d-flex gap-2 align-items-start mb-2">
+              <i class="bi bi-alarm-fill text-danger mt-1"></i>
+              <div>
+                <div class="fw-semibold small text-danger">Release Workflow Triggered</div>
+                <div class="text-muted mt-1" style="font-size:.75rem;">
+                  You have been inactive for <strong>{{ days_inactive }} days</strong>,
+                  exceeding your {{ threshold }}-day threshold.
+                </div>
+              </div>
+            </div>
+
+            {% if release_request %}
+            <div class="d-flex gap-3 mt-2 flex-wrap" style="font-size:.72rem;color:#aaa;">
+              <span><i class="bi bi-hash me-1"></i>Request #{{ release_request.pk }}</span>
+              <span><i class="bi bi-tag me-1"></i>{{ release_request.get_status_display }}</span>
+              {% if release_request.triggered_at %}
+              <span><i class="bi bi-clock me-1"></i>{{ release_request.triggered_at|date:"d M Y, H:i" }}</span>
+              {% endif %}
+            </div>
+
+            <!-- Email dispatch status -->
+            {% if release_request.warning_sent_at %}
+            <div class="mt-2 p-2 rounded-2 d-flex align-items-center gap-2"
+                 style="background:rgba(25,200,100,.08);border:1px solid rgba(25,200,100,.2);">
+              <i class="bi bi-envelope-check-fill" style="color:#19c864;font-size:.85rem;"></i>
+              <span class="small" style="color:#19c864;">
+                Nominee emails sent on {{ release_request.warning_sent_at|date:"d M Y, H:i" }}
+              </span>
+            </div>
+            {% else %}
+            <div class="mt-2 p-2 rounded-2 d-flex align-items-center gap-2"
+                 style="background:rgba(255,193,7,.06);border:1px solid rgba(255,193,7,.2);">
+              <i class="bi bi-envelope-exclamation-fill text-warning" style="font-size:.85rem;"></i>
+              <span class="small text-warning">Nominee email dispatch is pending.</span>
+            </div>
+            {% endif %}
+            {% endif %}
+
+            <a href="{% url 'vault:settings' %}" class="btn btn-danger btn-sm mt-3 w-100 fw-semibold">
+              <i class="bi bi-shield-exclamation me-1"></i>Review Inactivity Settings
+            </a>
+          </div>
+
+          <!-- At Risk: softer warning -->
+          {% elif inactivity_status == 'at_risk' %}
+          <div class="rounded-3 p-2 mt-1"
+               style="background:rgba(255,193,7,.07);border:1px solid rgba(255,193,7,.2);font-size:.78rem;">
+            <i class="bi bi-exclamation-triangle-fill text-warning me-1"></i>
+            <strong class="text-warning">Approaching threshold.</strong>
+            Log in regularly to keep your account active and prevent the release workflow.
+          </div>
+          {% endif %}
+
+        </div>
+      </div><!-- /inactivity card -->
+
+      <!-- Recent Activity -->
+      <div class="dw-card">
+        <div class="dw-card-header d-flex justify-content-between align-items-center">
+          <h6 class="mb-0 fw-semibold"><i class="bi bi-clock-history text-info me-2"></i>Recent Activity</h6>
+          <a href="{% url 'vault:activity_log' %}" class="text-muted small text-decoration-none">Full log →</a>
+        </div>
+        <div class="p-3">
+          {% if logs %}
+            <ul class="list-unstyled mb-0">
+              {% for log in logs %}
+              <li class="d-flex align-items-start gap-3 mb-3">
+                <span class="dw-activity-dot mt-1"></span>
+                <div class="flex-grow-1">
+                  <div class="small fw-semibold">{{ log.action }}</div>
+                  <div class="text-muted" style="font-size:.75rem;">{{ log.timestamp|date:"d M Y, H:i" }}</div>
+                </div>
+              </li>
+              {% endfor %}
+            </ul>
+          {% else %}
+            <p class="text-muted small text-center py-2 mb-0">No activity recorded yet.</p>
+          {% endif %}
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+{% endblock %}

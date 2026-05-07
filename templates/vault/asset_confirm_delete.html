@@ -1,0 +1,77 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Delete Asset — Digital Will{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="row justify-content-center">
+    <div class="col-lg-6 col-md-8">
+
+      <!-- Breadcrumb -->
+      <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb dw-breadcrumb">
+          <li class="breadcrumb-item"><a href="{% url 'vault:asset_list' %}" class="text-warning text-decoration-none">Assets</a></li>
+          <li class="breadcrumb-item active text-muted">Delete</li>
+        </ol>
+      </nav>
+
+      <!-- Warning Card -->
+      <div class="dw-card text-center" style="border-color:rgba(255,80,80,.3);">
+
+        <!-- Danger Icon -->
+        <div class="p-5 pb-0">
+          <div class="mx-auto mb-4 d-flex align-items-center justify-content-center"
+               style="width:72px;height:72px;background:rgba(255,80,80,.1);border-radius:50%;border:2px solid rgba(255,80,80,.3);">
+            <i class="bi bi-trash-fill text-danger fs-2"></i>
+          </div>
+          <h4 class="fw-bold mb-2">Delete this asset?</h4>
+          <p class="text-muted mb-0">
+            You are about to permanently delete:
+          </p>
+        </div>
+
+        <!-- Asset Info -->
+        <div class="mx-4 my-4 p-3 rounded-3" style="background:var(--dw-surface-2);border:1px solid var(--dw-border);">
+          <div class="d-flex align-items-center justify-content-center gap-3">
+            {% if asset.category == 'password' %}
+              <i class="bi bi-key-fill cat-password fs-4"></i>
+            {% elif asset.category == 'document' %}
+              <i class="bi bi-file-earmark-text-fill cat-document fs-4"></i>
+            {% else %}
+              <i class="bi bi-journal-text cat-note fs-4"></i>
+            {% endif %}
+            <div class="text-start">
+              <div class="fw-bold">{{ asset.title }}</div>
+              <div class="text-muted small text-capitalize">{{ asset.category }} · Added {{ asset.created_at|date:"d M Y" }}</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Warning -->
+        <div class="mx-4 mb-4">
+          <div class="alert py-2 mb-0" style="background:rgba(255,80,80,.08);border:1px solid rgba(255,80,80,.2);border-radius:8px;">
+            <i class="bi bi-exclamation-triangle-fill text-danger me-2"></i>
+            <span class="small text-danger">This action is <strong>permanent</strong> and cannot be undone.</span>
+          </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="d-flex gap-3 justify-content-center pb-5">
+          <form method="post">
+            {% csrf_token %}
+            <button type="submit" id="btn_confirm_delete" class="btn btn-danger px-4 fw-semibold">
+              <i class="bi bi-trash me-2"></i>Yes, Delete It
+            </button>
+          </form>
+          <a href="{% url 'vault:asset_list' %}" class="btn btn-outline-secondary px-4">
+            Cancel
+          </a>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+</div>
+{% endblock %}

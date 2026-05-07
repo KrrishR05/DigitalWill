@@ -1,0 +1,436 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Settings — Digital Will{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+
+  <!-- ══ Header ══════════════════════════════════════════ -->
+  <div class="dw-page-header d-flex align-items-center justify-content-between flex-wrap gap-2 mb-4">
+    <div>
+      <h2 class="mb-1"><i class="bi bi-gear-fill text-warning me-2"></i>Settings</h2>
+      <p class="text-muted mb-0 small">Manage your account, security preferences, and final message.</p>
+    </div>
+    <a href="{% url 'vault:dashboard' %}" class="btn btn-outline-secondary btn-sm">
+      <i class="bi bi-arrow-left me-1"></i>Back to Dashboard
+    </a>
+  </div>
+
+  {% if messages %}
+    {% for message in messages %}
+    <div class="alert dw-alert alert-dismissible fade show mb-4
+      {% if 'saved' in message.message or '✅' in message.message or '🔒' in message.message or '🔑' in message.message %}
+        border-success
+      {% else %}
+        border-danger
+      {% endif %}" role="alert" style="border-left:4px solid;">
+      {{ message }}
+      <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert"></button>
+    </div>
+    {% endfor %}
+  {% endif %}
+
+  <div class="row g-4">
+
+    <!-- ════════ LEFT COLUMN ═══════════════════════ -->
+    <div class="col-lg-4">
+
+      <!-- Account Summary Card -->
+      <div class="dw-card mb-4">
+        <div class="p-4 text-center">
+          <div class="mx-auto mb-3 d-flex align-items-center justify-content-center"
+               style="width:72px;height:72px;background:linear-gradient(135deg,var(--dw-amber),#ff9a3c);
+                      border-radius:50%;font-size:1.8rem;font-weight:700;color:#000;">
+            {{ user.username|first|upper }}
+          </div>
+          <h5 class="fw-bold mb-0">
+            {% if user.get_full_name %}{{ user.get_full_name }}{% else %}{{ user.username }}{% endif %}
+          </h5>
+          <div class="text-muted small mt-1">@{{ user.username }}</div>
+          <div class="text-muted small">{{ user.email }}</div>
+
+          <!-- Status -->
+          <div class="mt-3">
+            {% if profile.is_at_risk %}
+              <span class="badge dw-badge-risk px-3 py-1">
+                <i class="bi bi-exclamation-triangle me-1"></i>At Risk
+              </span>
+            {% else %}
+              <span class="badge dw-badge-active px-3 py-1">
+                <i class="bi bi-shield-check me-1"></i>Active
+              </span>
+            {% endif %}
+          </div>
+        </div>
+
+        <!-- Quick Stats -->
+        <div class="dw-card-footer p-0">
+          <div class="d-flex text-center">
+            <div class="flex-fill py-3" style="border-right:1px solid var(--dw-border);">
+              <div class="fw-bold text-warning">{{ profile.inactivity_days }}d</div>
+              <div class="text-muted" style="font-size:.7rem;">Threshold</div>
+            </div>
+            <div class="flex-fill py-3" style="border-right:1px solid var(--dw-border);">
+              <div class="fw-bold text-info">{{ profile.days_since_active }}</div>
+              <div class="text-muted" style="font-size:.7rem;">Days since login</div>
+            </div>
+            <div class="flex-fill py-3">
+              <div class="fw-bold text-success">{{ user.nominees.count }}</div>
+              <div class="text-muted" style="font-size:.7rem;">Nominees</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Final Message Preview -->
+      {% if profile.final_message %}
+      <div class="dw-card mb-4">
+        <div class="dw-card-header">
+          <h6 class="mb-0 fw-semibold">
+            <i class="bi bi-envelope-heart text-warning me-2"></i>Final Message Preview
+          </h6>
+        </div>
+        <div class="p-3">
+          <p class="text-muted small mb-0 fst-italic" style="line-height:1.6;">
+            "{{ profile.final_message|truncatechars:180 }}"
+          </p>
+        </div>
+      </div>
+      {% endif %}
+
+      <!-- Quick Links -->
+      <div class="dw-card">
+        <div class="dw-card-header">
+          <h6 class="mb-0 fw-semibold"><i class="bi bi-lightning-fill text-warning me-2"></i>Quick Links</h6>
+        </div>
+        <div class="p-3 d-grid gap-2">
+          <a href="{% url 'vault:asset_list' %}" class="btn btn-outline-light btn-sm text-start">
+            <i class="bi bi-safe2 me-2 text-warning"></i>My Assets
+          </a>
+          <a href="{% url 'vault:nominee_list' %}" class="btn btn-outline-light btn-sm text-start">
+            <i class="bi bi-people me-2 text-warning"></i>My Nominees
+          </a>
+          <a href="{% url 'vault:activity_log' %}" class="btn btn-outline-light btn-sm text-start">
+            <i class="bi bi-clock-history me-2 text-warning"></i>Activity Log
+          </a>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ════════ RIGHT COLUMN ════════════════════════════ -->
+    <div class="col-lg-8 d-flex flex-column gap-4">
+
+      <!-- ── SECTION 1: Security Settings ──────────────── -->
+      <div class="dw-card dw-card--settings-section">
+        <div class="dw-card-header d-flex align-items-center gap-2">
+          <i class="bi bi-shield-lock-fill text-warning fs-5"></i>
+          <div>
+            <h6 class="mb-0 fw-semibold">Security Settings</h6>
+            <div class="text-muted" style="font-size:.75rem;">
+              Control your inactivity threshold and write your final message.
+            </div>
+          </div>
+        </div>
+        <div class="p-4">
+          <form method="post" novalidate>
+            {% csrf_token %}
+            <input type="hidden" name="action" value="profile">
+
+            <!-- Inactivity Threshold -->
+            <div class="mb-4">
+              <label class="form-label" for="id_inactivity_days">
+                <i class="bi bi-hourglass-split me-1 text-warning"></i>
+                {{ profile_form.inactivity_days.label }}
+              </label>
+              <!-- Custom styled select cards -->
+              <div class="row g-2 mb-2" id="threshold-cards">
+                {% for value, label in profile_form.fields.inactivity_days.choices %}
+                <div class="col-6 col-md-3">
+                  <label class="dw-threshold-card {% if profile_form.inactivity_days.value|stringformat:'s' == value|stringformat:'s' %}selected{% endif %}"
+                         for="threshold_{{ value }}">
+                    <input type="radio" name="inactivity_days" id="threshold_{{ value }}"
+                           value="{{ value }}"
+                           {% if profile_form.inactivity_days.value|stringformat:'s' == value|stringformat:'s' %}checked{% endif %}>
+                    <div class="fw-bold">{{ value }}</div>
+                    <div style="font-size:.65rem;color:var(--dw-muted);">days</div>
+                  </label>
+                </div>
+                {% endfor %}
+              </div>
+              {% if profile_form.inactivity_days.help_text %}
+              <div class="form-text text-muted" style="font-size:.75rem;">
+                <i class="bi bi-info-circle me-1"></i>{{ profile_form.inactivity_days.help_text }}
+              </div>
+              {% endif %}
+            </div>
+
+            <!-- Final Message -->
+            <div class="mb-4">
+              <label class="form-label" for="id_final_message">
+                <i class="bi bi-envelope-heart me-1 text-warning"></i>
+                {{ profile_form.final_message.label }}
+              </label>
+              <textarea name="final_message" id="id_final_message"
+                        class="form-control {% if profile_form.final_message.errors %}is-invalid{% endif %}"
+                        rows="7"
+                        placeholder="Write your final message to your loved ones…">{{ profile_form.final_message.value|default:'' }}</textarea>
+              {% if profile_form.final_message.errors %}
+                <div class="invalid-feedback">{{ profile_form.final_message.errors.0 }}</div>
+              {% endif %}
+              <div class="form-text text-muted" style="font-size:.75rem;">
+                <i class="bi bi-lock-fill me-1"></i>This message is stored encrypted and only sent to nominees upon release.
+              </div>
+            </div>
+
+            <button type="submit" id="btn_save_security" class="btn btn-warning fw-semibold px-4 dw-btn-glow">
+              <i class="bi bi-shield-check me-2"></i>Save Security Settings
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <!-- ── SECTION 2: Account Information ────────────── -->
+      <div class="dw-card dw-card--settings-section">
+        <div class="dw-card-header d-flex align-items-center gap-2">
+          <i class="bi bi-person-circle text-info fs-5"></i>
+          <div>
+            <h6 class="mb-0 fw-semibold">Account Information</h6>
+            <div class="text-muted" style="font-size:.75rem;">Update your display name and email address.</div>
+          </div>
+        </div>
+        <div class="p-4">
+          <form method="post" novalidate>
+            {% csrf_token %}
+            <input type="hidden" name="action" value="account">
+
+            <!-- Username (read-only) -->
+            <div class="mb-3">
+              <label class="form-label">
+                <i class="bi bi-at me-1 text-warning"></i>Username
+              </label>
+              <input type="text" class="form-control" value="{{ user.username }}" disabled>
+              <div class="form-text text-muted" style="font-size:.72rem;">Username cannot be changed.</div>
+            </div>
+
+            <div class="row g-3 mb-3">
+              <div class="col-sm-6">
+                <label class="form-label" for="id_first_name">
+                  <i class="bi bi-person me-1 text-warning"></i>First Name
+                </label>
+                <input type="text" name="first_name" id="id_first_name"
+                       class="form-control {% if account_form.first_name.errors %}is-invalid{% endif %}"
+                       placeholder="John"
+                       value="{{ account_form.first_name.value|default:'' }}">
+                {% if account_form.first_name.errors %}
+                  <div class="invalid-feedback">{{ account_form.first_name.errors.0 }}</div>
+                {% endif %}
+              </div>
+              <div class="col-sm-6">
+                <label class="form-label" for="id_last_name">Last Name</label>
+                <input type="text" name="last_name" id="id_last_name"
+                       class="form-control {% if account_form.last_name.errors %}is-invalid{% endif %}"
+                       placeholder="Smith"
+                       value="{{ account_form.last_name.value|default:'' }}">
+              </div>
+            </div>
+
+            <div class="mb-4">
+              <label class="form-label" for="id_email">
+                <i class="bi bi-envelope me-1 text-warning"></i>Email Address
+              </label>
+              <input type="email" name="email" id="id_email"
+                     class="form-control {% if account_form.email.errors %}is-invalid{% endif %}"
+                     placeholder="john@example.com"
+                     value="{{ account_form.email.value|default:'' }}">
+              {% if account_form.email.errors %}
+                <div class="invalid-feedback">{{ account_form.email.errors.0 }}</div>
+              {% endif %}
+            </div>
+
+            <button type="submit" id="btn_save_account" class="btn btn-info fw-semibold px-4" style="color:#000;">
+              <i class="bi bi-person-check me-2"></i>Update Account
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <!-- ── SECTION 3: Change Password ────────────────── -->
+      <div class="dw-card dw-card--settings-section">
+        <div class="dw-card-header d-flex align-items-center gap-2">
+          <i class="bi bi-key-fill text-success fs-5"></i>
+          <div>
+            <h6 class="mb-0 fw-semibold">Change Password</h6>
+            <div class="text-muted" style="font-size:.75rem;">Update your login password securely.</div>
+          </div>
+        </div>
+        <div class="p-4">
+          <form method="post" novalidate>
+            {% csrf_token %}
+            <input type="hidden" name="action" value="password">
+
+            <div class="mb-3">
+              <label class="form-label" for="id_old_password">
+                <i class="bi bi-lock me-1 text-warning"></i>Current Password
+              </label>
+              <input type="password" name="old_password" id="id_old_password"
+                     class="form-control {% if password_form.old_password.errors %}is-invalid{% endif %}"
+                     placeholder="Enter current password" autocomplete="current-password">
+              {% if password_form.old_password.errors %}
+                <div class="invalid-feedback">{{ password_form.old_password.errors.0 }}</div>
+              {% endif %}
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label" for="id_new_password1">
+                <i class="bi bi-lock-fill me-1 text-warning"></i>New Password
+              </label>
+              <input type="password" name="new_password1" id="id_new_password1"
+                     class="form-control {% if password_form.new_password1.errors %}is-invalid{% endif %}"
+                     placeholder="Enter new password" autocomplete="new-password">
+              {% if password_form.new_password1.errors %}
+                <div class="invalid-feedback">{{ password_form.new_password1.errors.0 }}</div>
+              {% endif %}
+            </div>
+
+            <div class="mb-4">
+              <label class="form-label" for="id_new_password2">
+                <i class="bi bi-lock-fill me-1 text-warning"></i>Confirm New Password
+              </label>
+              <input type="password" name="new_password2" id="id_new_password2"
+                     class="form-control {% if password_form.new_password2.errors %}is-invalid{% endif %}"
+                     placeholder="Repeat new password" autocomplete="new-password">
+              {% if password_form.new_password2.errors %}
+                <div class="invalid-feedback">{{ password_form.new_password2.errors.0 }}</div>
+              {% endif %}
+            </div>
+
+            <button type="submit" id="btn_change_password" class="btn btn-success fw-semibold px-4">
+              <i class="bi bi-key me-2"></i>Change Password
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <!-- ── SECTION 4: Test OTP Flow ──────────────────── -->
+      <div class="dw-card" style="border-color:rgba(25,200,100,.3);">
+        <div class="dw-card-header d-flex align-items-center gap-2"
+             style="background:rgba(25,200,100,.06);border-bottom-color:rgba(25,200,100,.2);">
+          <i class="bi bi-send-check-fill text-success fs-5"></i>
+          <div>
+            <h6 class="mb-0 fw-semibold text-success">Test OTP Email Flow</h6>
+            <div class="text-muted" style="font-size:.75rem;">
+              Send a real OTP email to all your nominees right now — no inactivity needed.
+            </div>
+          </div>
+        </div>
+        <div class="p-4">
+          <div class="rounded-3 p-3 mb-4"
+               style="background:rgba(25,200,100,.06);border:1px solid rgba(25,200,100,.15);">
+            <h6 class="fw-semibold small mb-2">
+              <i class="bi bi-list-check text-success me-2"></i>What happens when you click:
+            </h6>
+            <ol class="text-muted small mb-0" style="line-height:2;">
+              <li>A unique <strong class="text-white">6-digit OTP</strong> is generated for each nominee.</li>
+              <li>An email is sent to every nominee with their OTP and a verification link.</li>
+              <li>Each nominee visits the link, enters their OTP, and sees their assigned assets.</li>
+            </ol>
+          </div>
+
+          {% if nominees %}
+          <div class="mb-3">
+            <div class="text-muted small mb-2">
+              <i class="bi bi-people-fill me-1 text-warning"></i>Nominees who will receive emails:
+            </div>
+            <div class="d-flex flex-wrap gap-2">
+              {% for n in nominees %}
+              <span class="badge px-2 py-1" style="background:var(--dw-surface-2);border:1px solid var(--dw-border);font-size:.75rem;font-weight:500;">
+                <i class="bi bi-person me-1 text-warning"></i>{{ n.name }}
+                <span class="text-muted ms-1">{{ n.email }}</span>
+              </span>
+              {% endfor %}
+            </div>
+          </div>
+          {% endif %}
+
+          <form method="post" action="{% url 'vault:test_send_otp' %}"
+                onsubmit="return confirm('Send test OTP emails to all {{ nominees.count }} nominee(s)? This will generate fresh OTPs.');">
+            {% csrf_token %}
+            <button type="submit" id="btn_test_otp"
+                    class="btn btn-success fw-semibold px-4"
+                    {% if not nominees %}disabled{% endif %}>
+              <i class="bi bi-send-fill me-2"></i>
+              Send Test OTP Emails
+              {% if nominees %}
+                <span class="badge bg-dark ms-2">{{ nominees.count }}</span>
+              {% endif %}
+            </button>
+            {% if not nominees %}
+            <div class="text-muted mt-2" style="font-size:.75rem;">
+              <i class="bi bi-exclamation-triangle me-1 text-warning"></i>
+              Add nominees first to enable this button.
+            </div>
+            {% endif %}
+          </form>
+        </div>
+      </div>
+
+      <!-- ── SECTION 5: Danger Zone ─────────────────────── -->
+      <div class="dw-card" style="border-color:rgba(255,68,68,.3);">
+        <div class="dw-card-header d-flex align-items-center gap-2"
+             style="background:rgba(255,68,68,.06);border-bottom-color:rgba(255,68,68,.2);">
+          <i class="bi bi-exclamation-triangle-fill text-danger fs-5"></i>
+          <div>
+            <h6 class="mb-0 fw-semibold text-danger">Danger Zone</h6>
+            <div class="text-muted" style="font-size:.75rem;">Irreversible actions — proceed with caution.</div>
+          </div>
+        </div>
+        <div class="p-4">
+          <div class="d-flex align-items-center justify-content-between flex-wrap gap-3 py-2"
+               style="border-bottom:1px solid rgba(255,68,68,.15);">
+            <div>
+              <div class="fw-semibold small mb-1">Clear Activity Log</div>
+              <div class="text-muted" style="font-size:.75rem;">
+                Permanently deletes your entire activity history. Cannot be undone.
+              </div>
+            </div>
+            <form method="post" onsubmit="return confirm('Clear all activity logs? This cannot be undone.');">
+              {% csrf_token %}
+              <input type="hidden" name="action" value="clear_logs">
+              <button type="submit" id="btn_clear_logs" class="btn btn-outline-danger btn-sm fw-semibold">
+                <i class="bi bi-trash me-1"></i>Clear Logs
+              </button>
+            </form>
+          </div>
+
+          <div class="d-flex align-items-center justify-content-between flex-wrap gap-3 pt-3">
+            <div>
+              <div class="fw-semibold small mb-1 text-danger">Log Out Everywhere</div>
+              <div class="text-muted" style="font-size:.75rem;">
+                Sign out of your current session immediately.
+              </div>
+            </div>
+            <a href="{% url 'vault:logout' %}" class="btn btn-danger btn-sm fw-semibold">
+              <i class="bi bi-box-arrow-right me-1"></i>Log Out
+            </a>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+// ── Threshold radio-card toggle ────────────────────────
+document.querySelectorAll('.dw-threshold-card input[type="radio"]').forEach(radio => {
+  radio.addEventListener('change', () => {
+    document.querySelectorAll('.dw-threshold-card').forEach(c => c.classList.remove('selected'));
+    if (radio.checked) radio.closest('.dw-threshold-card').classList.add('selected');
+  });
+});
+</script>
+{% endblock %}

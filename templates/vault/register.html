@@ -1,0 +1,158 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Create Account — Digital Will{% endblock %}
+
+{% block content %}
+<section class="dw-form-section py-5">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-md-8 col-lg-6">
+
+        <!-- Header -->
+        <div class="text-center mb-4">
+          <div class="dw-icon-circle mx-auto mb-3">
+            <i class="bi bi-person-plus-fill fs-3 text-warning"></i>
+          </div>
+          <h2 class="fw-bold mb-1">Create Your Vault</h2>
+          <p class="text-muted">Secure your digital legacy in minutes.</p>
+        </div>
+
+        <!-- Card -->
+        <div class="dw-form-card">
+
+          <!-- Error display -->
+          {% if form.non_field_errors %}
+          <div class="alert alert-danger rounded-3 py-2 mb-3 small">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+            {% for error in form.non_field_errors %}{{ error }}{% endfor %}
+          </div>
+          {% endif %}
+
+          <!-- Registration Form -->
+          <form method="post" novalidate>
+            {% csrf_token %}
+
+            <!-- Username -->
+            <div class="mb-3">
+              <label class="form-label" for="id_username">
+                <i class="bi bi-person me-1 text-warning"></i>Username
+              </label>
+              <input type="text"
+                     name="username"
+                     id="id_username"
+                     class="form-control {% if form.username.errors %}is-invalid{% endif %}"
+                     placeholder="Choose a username"
+                     value="{{ form.username.value|default:'' }}"
+                     autofocus
+                     required />
+              {% if form.username.errors %}
+              <div class="invalid-feedback">{{ form.username.errors.0 }}</div>
+              {% endif %}
+            </div>
+
+            <!-- Email -->
+            <div class="mb-3">
+              <label class="form-label" for="id_email">
+                <i class="bi bi-envelope me-1 text-warning"></i>Email Address
+              </label>
+              <input type="email"
+                     name="email"
+                     id="id_email"
+                     class="form-control {% if form.email.errors %}is-invalid{% endif %}"
+                     placeholder="you@example.com"
+                     value="{{ form.email.value|default:'' }}"
+                     required />
+              {% if form.email.errors %}
+              <div class="invalid-feedback">{{ form.email.errors.0 }}</div>
+              {% endif %}
+            </div>
+
+            <!-- Password -->
+            <div class="mb-3">
+              <label class="form-label" for="id_password1">
+                <i class="bi bi-lock me-1 text-warning"></i>Password
+              </label>
+              <div class="input-group">
+                <input type="password"
+                       name="password1"
+                       id="id_password1"
+                       class="form-control {% if form.password1.errors %}is-invalid{% endif %}"
+                       placeholder="Min. 8 characters"
+                       required />
+                <button class="btn btn-outline-secondary toggle-pw" type="button" data-target="id_password1" tabindex="-1">
+                  <i class="bi bi-eye"></i>
+                </button>
+                {% if form.password1.errors %}
+                <div class="invalid-feedback d-block">{{ form.password1.errors.0 }}</div>
+                {% endif %}
+              </div>
+            </div>
+
+            <!-- Confirm Password -->
+            <div class="mb-4">
+              <label class="form-label" for="id_password2">
+                <i class="bi bi-lock-fill me-1 text-warning"></i>Confirm Password
+              </label>
+              <div class="input-group">
+                <input type="password"
+                       name="password2"
+                       id="id_password2"
+                       class="form-control {% if form.password2.errors %}is-invalid{% endif %}"
+                       placeholder="Repeat your password"
+                       required />
+                <button class="btn btn-outline-secondary toggle-pw" type="button" data-target="id_password2" tabindex="-1">
+                  <i class="bi bi-eye"></i>
+                </button>
+                {% if form.password2.errors %}
+                <div class="invalid-feedback d-block">{{ form.password2.errors.0 }}</div>
+                {% endif %}
+              </div>
+            </div>
+
+            <!-- Submit -->
+            <button type="submit" id="btn_register" class="btn btn-warning w-100 fw-semibold py-2 dw-btn-glow">
+              <i class="bi bi-shield-plus me-2"></i>Create My Vault
+            </button>
+          </form>
+
+          <!-- Divider -->
+          <div class="dw-divider my-4"><span>or</span></div>
+
+          <!-- Already have account -->
+          <p class="text-center text-muted mb-0 small">
+            Already have an account?
+            <a href="{% url 'vault:login' %}" class="text-warning fw-semibold text-decoration-none">Sign In</a>
+          </p>
+        </div>
+
+        <!-- Privacy note -->
+        <p class="text-center text-muted mt-3" style="font-size:.75rem;">
+          <i class="bi bi-shield-lock me-1"></i>
+          All data is encrypted end-to-end. We never read your content.
+        </p>
+
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  // Toggle password visibility
+  document.querySelectorAll('.toggle-pw').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const input = document.getElementById(btn.dataset.target);
+      const icon  = btn.querySelector('i');
+      if (input.type === 'password') {
+        input.type = 'text';
+        icon.className = 'bi bi-eye-slash';
+      } else {
+        input.type = 'password';
+        icon.className = 'bi bi-eye';
+      }
+    });
+  });
+</script>
+{% endblock %}

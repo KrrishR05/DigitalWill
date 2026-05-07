@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Remove Nominee — Digital Will{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="row justify-content-center">
+    <div class="col-lg-6 col-md-8">
+
+      <!-- Breadcrumb -->
+      <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb dw-breadcrumb">
+          <li class="breadcrumb-item">
+            <a href="{% url 'vault:nominee_list' %}" class="text-warning text-decoration-none">Nominees</a>
+          </li>
+          <li class="breadcrumb-item active text-muted">Remove</li>
+        </ol>
+      </nav>
+
+      <!-- Confirm Card -->
+      <div class="dw-card text-center" style="border-color:rgba(255,80,80,.3);">
+        <div class="p-5 pb-0">
+          <div class="mx-auto mb-4 d-flex align-items-center justify-content-center"
+               style="width:72px;height:72px;background:rgba(255,80,80,.1);border-radius:50%;border:2px solid rgba(255,80,80,.3);">
+            <i class="bi bi-person-x-fill text-danger fs-2"></i>
+          </div>
+          <h4 class="fw-bold mb-2">Remove this nominee?</h4>
+          <p class="text-muted mb-0">You are about to remove:</p>
+        </div>
+
+        <!-- Nominee Info -->
+        <div class="mx-4 my-4 p-3 rounded-3" style="background:var(--dw-surface-2);border:1px solid var(--dw-border);">
+          <div class="d-flex align-items-center justify-content-center gap-3">
+            <div class="dw-avatar">{{ nominee.name|first|upper }}</div>
+            <div class="text-start">
+              <div class="fw-bold">{{ nominee.name }}</div>
+              <div class="text-muted small">{{ nominee.email }}</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Warning -->
+        <div class="mx-4 mb-4">
+          <div class="alert py-2 mb-0" style="background:rgba(255,80,80,.08);border:1px solid rgba(255,80,80,.2);border-radius:8px;">
+            <i class="bi bi-exclamation-triangle-fill text-danger me-2"></i>
+            <span class="small text-danger">
+              This will also <strong>unassign</strong> them from all your assets.
+            </span>
+          </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="d-flex gap-3 justify-content-center pb-5">
+          <form method="post">
+            {% csrf_token %}
+            <button type="submit" id="btn_confirm_remove" class="btn btn-danger px-4 fw-semibold">
+              <i class="bi bi-person-x me-2"></i>Yes, Remove
+            </button>
+          </form>
+          <a href="{% url 'vault:nominee_list' %}" class="btn btn-outline-secondary px-4">Cancel</a>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+{% endblock %}

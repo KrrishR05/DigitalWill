@@ -1,0 +1,43 @@
+# ─────────────────────────────────────────────────────────
+# .gitignore — Digital Will Platform
+# ─────────────────────────────────────────────────────────
+
+# ── Environment / Secrets (NEVER commit these) ───────────
+.env
+*.env
+
+# ── Development helper / one-off scripts (not part of the app) ──
+_add_otp_views.py
+_setup_otp.py
+
+# ── Superseded migration (replaced by 0005_releaserequest_warning_sent_at) ──
+vault/migrations/0004_releaserequest_warning_sent_at.py
+
+# ── Python ───────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+
+# ── Virtual Environment ──────────────────────────────────
+venv/
+env/
+.venv/
+ENV/
+
+# ── Django ───────────────────────────────────────────────
+db.sqlite3
+*.sqlite3
+staticfiles/
+media/
+
+# ── IDE ──────────────────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# ── OS ───────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
