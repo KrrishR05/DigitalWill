@@ -1,0 +1,147 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ asset.title }} — Digital Will{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="row justify-content-center">
+    <div class="col-lg-8">
+
+      <!-- Breadcrumb -->
+      <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb dw-breadcrumb">
+          <li class="breadcrumb-item"><a href="{% url 'vault:asset_list' %}" class="text-warning text-decoration-none">Assets</a></li>
+          <li class="breadcrumb-item active text-muted text-truncate">{{ asset.title }}</li>
+        </ol>
+      </nav>
+
+      <!-- Asset Header Card -->
+      <div class="dw-card mb-4">
+        <div class="dw-asset-banner dw-asset-banner--{{ asset.category }}"></div>
+        <div class="p-4">
+          <div class="d-flex align-items-start justify-content-between gap-3 flex-wrap">
+            <div class="d-flex align-items-center gap-3">
+              <!-- Category Icon -->
+              <div class="dw-cat-icon-lg
+                {% if asset.category == 'password' %}dw-cat-icon-lg--password
+                {% elif asset.category == 'document' %}dw-cat-icon-lg--document
+                {% else %}dw-cat-icon-lg--note{% endif %}">
+                {% if asset.category == 'password' %}<i class="bi bi-key-fill"></i>
+                {% elif asset.category == 'document' %}<i class="bi bi-file-earmark-text-fill"></i>
+                {% else %}<i class="bi bi-journal-text"></i>{% endif %}
+              </div>
+              <div>
+                <h3 class="fw-bold mb-1">{{ asset.title }}</h3>
+                <div class="d-flex align-items-center gap-2">
+                  <span class="badge bg-secondary text-capitalize">{{ asset.category }}</span>
+                  <span class="text-muted" style="font-size:.78rem;">
+                    <i class="bi bi-calendar3 me-1"></i>{{ asset.created_at|date:"d M Y, H:i" }}
+                  </span>
+                  {% if asset.updated_at != asset.created_at %}
+                  <span class="text-muted" style="font-size:.78rem;">
+                    · Updated {{ asset.updated_at|date:"d M Y" }}
+                  </span>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="d-flex gap-2">
+              <a href="{% url 'vault:asset_edit' asset.pk %}" class="btn btn-outline-warning btn-sm">
+                <i class="bi bi-pencil me-1"></i>Edit
+              </a>
+              <a href="{% url 'vault:asset_delete' asset.pk %}" class="btn btn-outline-danger btn-sm">
+                <i class="bi bi-trash me-1"></i>Delete
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Content Card -->
+      <div class="dw-card">
+        <div class="dw-card-header d-flex align-items-center justify-content-between">
+          <h6 class="mb-0 fw-semibold">
+            {% if file_url %}
+              <i class="bi bi-paperclip text-warning me-2"></i>Attached File
+            {% else %}
+              <i class="bi bi-unlock-fill text-warning me-2"></i>Decrypted Content
+            {% endif %}
+          </h6>
+          {% if not file_url %}
+          <button class="btn btn-sm btn-outline-secondary" id="copyBtn" onclick="copyContent()">
+            <i class="bi bi-clipboard me-1"></i>Copy
+          </button>
+          {% endif %}
+        </div>
+        <div class="p-4">
+
+          {% if file_url %}
+          <!-- ── FILE DOWNLOAD ────────────────────────── -->
+          <div class="d-flex align-items-center gap-2 mb-4 p-2 rounded-2"
+               style="background:rgba(245,166,35,.06);border:1px solid rgba(245,166,35,.15);">
+            <i class="bi bi-lock-fill text-warning" style="font-size:.85rem;"></i>
+            <span class="text-muted" style="font-size:.75rem;">
+              This file is stored securely on the server. Only you can access it.
+            </span>
+          </div>
+
+          <div class="text-center py-3">
+            <i class="bi bi-file-earmark-arrow-down-fill text-warning" style="font-size:4rem;"></i>
+            <p class="fw-semibold mt-3 mb-1">{{ asset.document_file.name|cut:"documents/" }}</p>
+            <p class="text-muted small mb-4">Click the button below to download your file.</p>
+            <a href="{{ file_url }}" download
+               class="btn btn-warning fw-semibold px-4 dw-btn-glow">
+              <i class="bi bi-download me-2"></i>Download File
+            </a>
+          </div>
+
+          {% elif decrypted %}
+          <!-- ── TEXT CONTENT (DECRYPTED) ─────────────── -->
+          <div class="d-flex align-items-center gap-2 mb-3 p-2 rounded-2"
+               style="background:rgba(245,166,35,.06);border:1px solid rgba(245,166,35,.15);">
+            <i class="bi bi-eye-fill text-warning" style="font-size:.85rem;"></i>
+            <span class="text-muted" style="font-size:.75rem;">
+              This content is decrypted only for viewing. It is stored encrypted in the database.
+            </span>
+          </div>
+          <pre id="assetContent" class="dw-content-box mb-0">{{ decrypted }}</pre>
+
+          {% else %}
+          <p class="text-muted text-center py-3">No content available for this asset.</p>
+          {% endif %}
+
+        </div>
+      </div>
+
+
+      <!-- Back Link -->
+      <div class="mt-4">
+        <a href="{% url 'vault:asset_list' %}" class="text-muted text-decoration-none small">
+          <i class="bi bi-arrow-left me-1"></i>Back to all assets
+        </a>
+      </div>
+
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+function copyContent() {
+  const text = document.getElementById('assetContent').innerText;
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = document.getElementById('copyBtn');
+    btn.innerHTML = '<i class="bi bi-check-lg me-1"></i>Copied!';
+    btn.classList.replace('btn-outline-secondary', 'btn-outline-success');
+    setTimeout(() => {
+      btn.innerHTML = '<i class="bi bi-clipboard me-1"></i>Copy';
+      btn.classList.replace('btn-outline-success', 'btn-outline-secondary');
+    }, 2000);
+  });
+}
+</script>
+{% endblock %}

@@ -1,0 +1,114 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Sign In — Digital Will{% endblock %}
+
+{% block content %}
+<section class="dw-form-section py-5">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-md-7 col-lg-5">
+
+        <!-- Header -->
+        <div class="text-center mb-4">
+          <div class="dw-icon-circle mx-auto mb-3">
+            <i class="bi bi-shield-lock-fill fs-3 text-warning"></i>
+          </div>
+          <h2 class="fw-bold mb-1">Welcome Back</h2>
+          <p class="text-muted">Sign in to access your secure vault.</p>
+        </div>
+
+        <!-- Card -->
+        <div class="dw-form-card">
+
+          <!-- Error alert -->
+          {% if login_error %}
+          <div class="alert alert-danger rounded-3 py-2 mb-3 small">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+            Invalid username or password. Please try again.
+          </div>
+          {% endif %}
+
+          <!-- Login form -->
+          <form method="post" novalidate>
+            {% csrf_token %}
+
+            <!-- Username -->
+            <div class="mb-3">
+              <label class="form-label" for="id_username">
+                <i class="bi bi-person me-1 text-warning"></i>Username
+              </label>
+              <input type="text"
+                     name="username"
+                     id="id_username"
+                     class="form-control"
+                     placeholder="Enter your username"
+                     value="{{ form.username.value|default:'' }}"
+                     autofocus
+                     required />
+            </div>
+
+            <!-- Password -->
+            <div class="mb-4">
+              <label class="form-label d-flex justify-content-between" for="id_password">
+                <span><i class="bi bi-lock me-1 text-warning"></i>Password</span>
+              </label>
+              <div class="input-group">
+                <input type="password"
+                       name="password"
+                       id="id_password"
+                       class="form-control"
+                       placeholder="Enter your password"
+                       required />
+                <button class="btn btn-outline-secondary" type="button" id="togglePw" tabindex="-1">
+                  <i class="bi bi-eye" id="toggleIcon"></i>
+                </button>
+              </div>
+            </div>
+
+            <!-- Submit -->
+            <button type="submit" id="btn_login" class="btn btn-warning w-100 fw-semibold py-2 dw-btn-glow">
+              <i class="bi bi-box-arrow-in-right me-2"></i>Sign In to Vault
+            </button>
+          </form>
+
+          <!-- Divider -->
+          <div class="dw-divider my-4"><span>or</span></div>
+
+          <!-- Register link -->
+          <p class="text-center text-muted mb-0 small">
+            Don't have an account?
+            <a href="{% url 'vault:register' %}" class="text-warning fw-semibold text-decoration-none">Create Vault</a>
+          </p>
+        </div>
+
+        <!-- Security note -->
+        <p class="text-center text-muted mt-3" style="font-size:.75rem;">
+          <i class="bi bi-incognito me-1"></i>
+          Your session is protected by CSRF tokens and secure cookies.
+        </p>
+
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  // Password toggle
+  const togglePw   = document.getElementById('togglePw');
+  const pwInput    = document.getElementById('id_password');
+  const toggleIcon = document.getElementById('toggleIcon');
+
+  togglePw.addEventListener('click', () => {
+    if (pwInput.type === 'password') {
+      pwInput.type = 'text';
+      toggleIcon.className = 'bi bi-eye-slash';
+    } else {
+      pwInput.type = 'password';
+      toggleIcon.className = 'bi bi-eye';
+    }
+  });
+</script>
+{% endblock %}

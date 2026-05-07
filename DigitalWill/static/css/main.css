@@ -1,0 +1,476 @@
+/* ═══════════════════════════════════════════════════════
+   DIGITALWILL — Main Stylesheet
+   Dark theme with neon-amber accents
+═══════════════════════════════════════════════════════ */
+
+/* ─── Dashboard: Avatar Circle ──────────────────────── */
+.dw-avatar {
+  width: 38px; height: 38px; min-width: 38px;
+  background: linear-gradient(135deg, var(--dw-amber), #ff9a3c);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 700; font-size: .9rem; color: #000;
+}
+/* Larger avatar for nominee list cards */
+.dw-avatar-lg {
+  width: 52px; height: 52px; min-width: 52px;
+  font-size: 1.15rem;
+}
+/* Small avatar for nominee selector in asset form */
+.dw-avatar-sm {
+  width: 30px; height: 30px; min-width: 30px;
+  background: linear-gradient(135deg, var(--dw-amber), #ff9a3c);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 700; font-size: .75rem; color: #000;
+}
+
+/* ─── Nominee Checkbox Card ───────────────────────── */
+.dw-nominee-check {
+  display: block;
+  background: var(--dw-surface-2);
+  border: 1px solid var(--dw-border);
+  border-radius: 10px;
+  padding: .65rem .9rem;
+  cursor: pointer;
+  transition: var(--dw-transition);
+}
+.dw-nominee-check input[type="checkbox"] { display: none; }
+.dw-nominee-check:hover { border-color: var(--dw-amber); }
+.dw-check-icon { opacity: 0; transition: var(--dw-transition); }
+.dw-nominee-check:has(input:checked) {
+  border-color: var(--dw-amber);
+  background: var(--dw-amber-glow);
+}
+.dw-nominee-check:has(input:checked) .dw-check-icon { opacity: 1; }
+
+/* ─── Activity Log: Timeline Dot ─────────────────────── */
+.dw-activity-dot {
+  width: 8px; height: 8px; min-width: 8px;
+  background: var(--dw-amber);
+  border-radius: 50%;
+  margin-top: 4px;
+}
+
+
+/* ─── Fonts & Root Variables ─────────────────────────── */
+:root {
+  --dw-bg:          #0d0f14;
+  --dw-surface:     #141720;
+  --dw-surface-2:   #1c2030;
+  --dw-border:      rgba(255,255,255,.06);
+  --dw-amber:       #f5a623;
+  --dw-amber-glow:  rgba(245,166,35,.18);
+  --dw-text:        #e8eaf0;
+  --dw-muted:       #8891a4;
+  --dw-radius:      12px;
+  --dw-transition:  all .25s ease;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body.dw-body {
+  font-family: 'Inter', sans-serif;
+  background: var(--dw-bg);
+  color: var(--dw-text);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ─── Navbar ────────────────────────────────────────── */
+.dw-navbar {
+  background: rgba(13,15,20,.88) !important;
+  backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--dw-border);
+  padding: .75rem 0;
+}
+
+.dw-brand {
+  font-size: 1.25rem;
+  color: var(--dw-text) !important;
+  text-decoration: none;
+  letter-spacing: -.5px;
+}
+
+.dw-navbar .nav-link {
+  color: var(--dw-muted) !important;
+  font-size: .9rem;
+  font-weight: 500;
+  padding: .4rem .75rem !important;
+  border-radius: 8px;
+  transition: var(--dw-transition);
+}
+.dw-navbar .nav-link:hover,
+.dw-navbar .nav-link.active {
+  color: var(--dw-text) !important;
+  background: var(--dw-surface-2);
+}
+
+/* ─── Main & Footer ──────────────────────────────────── */
+.dw-main { flex: 1; }
+
+.dw-footer {
+  border-top: 1px solid var(--dw-border);
+  background: var(--dw-surface);
+}
+
+/* ─── Alert override ─────────────────────────────────── */
+.dw-alert {
+  background: var(--dw-surface-2);
+  border: 1px solid var(--dw-border);
+  color: var(--dw-text);
+  border-radius: var(--dw-radius);
+}
+
+/* ─── Hero Section ───────────────────────────────────── */
+.dw-hero {
+  min-height: 88vh;
+  background:
+    radial-gradient(ellipse 70% 60% at 70% 50%, rgba(245,166,35,.07) 0%, transparent 70%),
+    var(--dw-bg);
+  padding: 5rem 0 4rem;
+}
+
+/* Gradient text */
+.dw-text-gradient {
+  background: linear-gradient(135deg, var(--dw-amber) 0%, #ff9a3c 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Glowing amber button */
+.dw-btn-glow {
+  box-shadow: 0 0 22px rgba(245,166,35,.35);
+  transition: var(--dw-transition);
+}
+.dw-btn-glow:hover {
+  box-shadow: 0 0 38px rgba(245,166,35,.55);
+  transform: translateY(-2px);
+}
+
+/* Feature cards on home page */
+.dw-feature-card {
+  background: var(--dw-surface);
+  border: 1px solid var(--dw-border);
+  transition: var(--dw-transition);
+}
+.dw-feature-card:hover {
+  border-color: var(--dw-amber);
+  transform: translateY(-4px);
+  box-shadow: 0 8px 32px rgba(245,166,35,.12);
+}
+
+/* ─── How It Works ───────────────────────────────────── */
+.dw-how-section { background: var(--dw-surface); }
+
+.dw-step-circle {
+  width: 56px; height: 56px;
+  background: var(--dw-amber);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 700; font-size: 1.2rem;
+  color: #000;
+  box-shadow: 0 4px 20px rgba(245,166,35,.3);
+}
+
+/* ─── CTA Section ────────────────────────────────────── */
+.dw-cta-section {
+  background: linear-gradient(135deg, #141720 0%, #1a1e2e 100%);
+  border-top: 1px solid var(--dw-border);
+}
+
+/* ─── Cards / Panels (dashboard etc.) ───────────────── */
+.dw-card {
+  background: var(--dw-surface);
+  border: 1px solid var(--dw-border);
+  border-radius: var(--dw-radius);
+  transition: var(--dw-transition);
+}
+.dw-card:hover { border-color: rgba(255,255,255,.12); }
+.dw-card-header {
+  background: var(--dw-surface-2);
+  border-bottom: 1px solid var(--dw-border);
+  border-radius: var(--dw-radius) var(--dw-radius) 0 0 !important;
+  padding: 1rem 1.25rem;
+}
+
+/* ─── Stat Widget (dashboard) ───────────────────────── */
+.dw-stat {
+  background: var(--dw-surface);
+  border: 1px solid var(--dw-border);
+  border-radius: var(--dw-radius);
+  padding: 1.5rem;
+  text-align: center;
+  transition: var(--dw-transition);
+}
+.dw-stat:hover { transform: translateY(-3px); border-color: var(--dw-amber); }
+.dw-stat-number {
+  font-size: 2.5rem;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--dw-amber);
+}
+
+/* ─── Status Badge ───────────────────────────────────── */
+.dw-badge-active     { background: rgba(25,200,100,.15);  color: #19c864; border: 1px solid rgba(25,200,100,.3);  }
+.dw-badge-risk,
+.dw-badge-at_risk    { background: rgba(255,193,7,.15);   color: #ffc107; border: 1px solid rgba(255,193,7,.3);   }
+.dw-badge-triggered  { background: rgba(255,68,68,.15);   color: #ff4444; border: 1px solid rgba(255,68,68,.3);   }
+
+/* ─── Inactivity Monitor Card — border accent variants ── */
+.dw-card--active              { border-left: 4px solid #19c864 !important; }
+.dw-card--at_risk,
+.dw-card--at-risk             { border-left: 4px solid #ffc107 !important; }
+.dw-card--triggered           { border-left: 4px solid #ff4444 !important; }
+
+/* ─── Inactivity Progress Bar ────────────────────────── */
+.dw-progress-active           { background: #19c864; }
+.dw-progress-at_risk,
+.dw-progress-at-risk          { background: #ffc107; }
+.dw-progress-triggered        { background: #ff4444; }
+
+/* ─── Settings: Section Card ─────────────────────────── */
+.dw-card--settings-section { transition: var(--dw-transition); }
+.dw-card--settings-section:focus-within { border-color: rgba(245,166,35,.4); }
+
+/* ─── Settings: Threshold Radio Cards ───────────────── */
+.dw-threshold-card {
+  display: block;
+  background: var(--dw-surface-2);
+  border: 1px solid var(--dw-border);
+  border-radius: 10px;
+  padding: .75rem .5rem;
+  text-align: center;
+  cursor: pointer;
+  transition: var(--dw-transition);
+  user-select: none;
+}
+.dw-threshold-card input[type="radio"] { display: none; }
+.dw-threshold-card:hover { border-color: var(--dw-amber); }
+.dw-threshold-card.selected {
+  border-color: var(--dw-amber);
+  background: var(--dw-amber-glow);
+  color: var(--dw-amber);
+}
+.dw-threshold-card.selected .fw-bold { color: var(--dw-amber); }
+
+/* ─── Inactivity Alert Boxes ─────────────────────────── */
+.dw-inactivity-alert-triggered {
+  background: rgba(255,68,68,.07);
+  border: 1px solid rgba(255,68,68,.2);
+}
+.dw-inactivity-alert-at-risk {
+  background: rgba(255,193,7,.07);
+  border: 1px solid rgba(255,193,7,.2);
+  font-size: .78rem;
+}
+
+/* ─── Table ──────────────────────────────────────────── */
+.dw-table {
+  border-radius: var(--dw-radius);
+  overflow: hidden;
+}
+.dw-table thead th {
+  background: var(--dw-surface-2);
+  border-bottom: 1px solid var(--dw-border);
+  font-size: .8rem;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  color: var(--dw-muted);
+  font-weight: 600;
+  padding: .85rem 1rem;
+}
+.dw-table tbody tr {
+  border-bottom: 1px solid var(--dw-border);
+  transition: background .15s;
+}
+.dw-table tbody tr:last-child { border-bottom: none; }
+.dw-table tbody tr:hover { background: var(--dw-surface-2); }
+.dw-table td { padding: .9rem 1rem; vertical-align: middle; }
+
+/* ─── Forms ──────────────────────────────────────────── */
+.dw-form-section {
+  min-height: 80vh;
+  display: flex;
+  align-items: center;
+  background: radial-gradient(ellipse 60% 50% at 50% 40%, rgba(245,166,35,.05) 0%, transparent 70%),
+              var(--dw-bg);
+}
+.dw-form-card {
+  background: var(--dw-surface);
+  border: 1px solid var(--dw-border);
+  border-radius: 18px;
+  padding: 2.5rem;
+}
+.form-control, .form-select {
+  background: var(--dw-surface-2) !important;
+  border: 1px solid var(--dw-border) !important;
+  color: var(--dw-text) !important;
+  border-radius: 8px !important;
+}
+.form-control:focus, .form-select:focus {
+  border-color: var(--dw-amber) !important;
+  box-shadow: 0 0 0 3px var(--dw-amber-glow) !important;
+}
+.form-label { color: var(--dw-muted); font-size: .875rem; font-weight: 500; }
+
+/* ─── Category Icon Colors ───────────────────────────── */
+.cat-password { color: #f5a623; }
+.cat-document { color: #4db8ff; }
+.cat-note     { color: #82ff82; }
+
+/* ─── Page Title Row ─────────────────────────────────── */
+.dw-page-header {
+  padding: 2rem 0 1.5rem;
+  border-bottom: 1px solid var(--dw-border);
+  margin-bottom: 2rem;
+}
+.dw-page-header h2 { font-weight: 700; margin-bottom: .25rem; }
+
+/* ─── Buttons ────────────────────────────────────────── */
+.btn { border-radius: 8px; font-weight: 500; }
+.btn-warning { color: #000 !important; }
+
+/* ─── Auth icon circle ───────────────────────────────── */
+.dw-icon-circle {
+  width: 68px; height: 68px;
+  background: var(--dw-surface-2);
+  border: 2px solid var(--dw-border);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+}
+
+/* ─── "or" divider ───────────────────────────────────── */
+.dw-divider {
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  color: var(--dw-muted);
+  font-size: .8rem;
+}
+.dw-divider::before,
+.dw-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--dw-border);
+}
+
+/* ─── Input group dark-theme fix ────────────────────── */
+.input-group .btn-outline-secondary {
+  border-color: var(--dw-border) !important;
+  color: var(--dw-muted);
+  background: var(--dw-surface-2);
+}
+.input-group .btn-outline-secondary:hover { color: var(--dw-text); }
+
+/* ─── Asset Cards ──────────────────────────────────── */
+.dw-asset-card { overflow: hidden; }
+.dw-asset-card:hover { transform: translateY(-4px); box-shadow: 0 12px 40px rgba(0,0,0,.4); }
+.dw-card-footer {
+  border-top: 1px solid var(--dw-border);
+  background: var(--dw-surface-2);
+}
+
+/* Coloured top border strip per category */
+.dw-asset-banner { height: 4px; }
+.dw-asset-banner--password { background: linear-gradient(90deg, var(--dw-amber), #ff9a3c); }
+.dw-asset-banner--document { background: linear-gradient(90deg, #4db8ff, #a78bfa); }
+.dw-asset-banner--note     { background: linear-gradient(90deg, #82ff82, #22d3ee); }
+
+/* Small category icon container */
+.dw-cat-icon {
+  width: 34px; height: 34px; border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1rem;
+}
+
+/* Large icon for detail page */
+.dw-cat-icon-lg {
+  width: 56px; height: 56px; border-radius: 14px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.6rem;
+  flex-shrink: 0;
+}
+.dw-cat-icon-lg--password { background: rgba(245,166,35,.12); color: var(--dw-amber); }
+.dw-cat-icon-lg--document  { background: rgba(77,184,255,.12);  color: #4db8ff; }
+.dw-cat-icon-lg--note      { background: rgba(130,255,130,.12); color: #82ff82; }
+
+/* Decrypted content preformatted box */
+.dw-content-box {
+  background: var(--dw-surface-2);
+  border: 1px solid var(--dw-border);
+  border-radius: 10px;
+  padding: 1.25rem;
+  color: var(--dw-text);
+  font-family: 'Inter', monospace;
+  font-size: .875rem;
+  white-space: pre-wrap;
+  word-break: break-word;
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+/* ─── Nav Pills (filter tabs) ─────────────────────── */
+.dw-nav-pills .nav-link {
+  background: var(--dw-surface);
+  border: 1px solid var(--dw-border);
+  color: var(--dw-muted);
+  border-radius: 50px;
+  padding: .4rem 1rem;
+  font-size: .85rem;
+  transition: var(--dw-transition);
+}
+.dw-nav-pills .nav-link:hover { color: var(--dw-text); border-color: rgba(255,255,255,.2); }
+.dw-nav-pills .nav-link.active {
+  background: var(--dw-amber) !important;
+  color: #000 !important;
+  border-color: var(--dw-amber) !important;
+  font-weight: 600;
+}
+
+/* ─── Breadcrumb ─────────────────────────────────── */
+.dw-breadcrumb {
+  background: none;
+  font-size: .82rem;
+  padding: 0;
+  margin: 0;
+}
+.dw-breadcrumb .breadcrumb-item + .breadcrumb-item::before { color: var(--dw-muted); }
+
+/* ─── Drag-and-Drop Dropzone ─────────────────────────── */
+.dw-dropzone {
+  display: block;
+  border: 2px dashed var(--dw-border);
+  border-radius: var(--dw-radius);
+  padding: 2.5rem 1.5rem;
+  text-align: center;
+  cursor: pointer;
+  transition: var(--dw-transition);
+  background: var(--dw-surface-2);
+  color: var(--dw-text);
+}
+.dw-dropzone:hover,
+.dw-dropzone--active {
+  border-color: var(--dw-amber);
+  background: var(--dw-amber-glow);
+}
+.dw-dropzone-icon {
+  font-size: 3rem;
+  color: var(--dw-muted);
+  display: block;
+  transition: var(--dw-transition);
+}
+.dw-dropzone:hover .dw-dropzone-icon,
+.dw-dropzone--active .dw-dropzone-icon { color: var(--dw-amber); }
+
+/* ─── Responsive padding ─────────────────────────────── */
+
+@media (max-width: 768px) {
+  .dw-hero { padding: 3rem 0; min-height: auto; }
+  .dw-stat-number { font-size: 1.8rem; }
+}

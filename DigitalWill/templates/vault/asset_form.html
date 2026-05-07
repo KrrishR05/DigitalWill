@@ -1,0 +1,318 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ action }} Asset — Digital Will{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="row justify-content-center">
+    <div class="col-lg-8">
+
+      <!-- Breadcrumb -->
+      <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb dw-breadcrumb">
+          <li class="breadcrumb-item"><a href="{% url 'vault:asset_list' %}" class="text-warning text-decoration-none">Assets</a></li>
+          <li class="breadcrumb-item active text-muted">{{ action }} Asset</li>
+        </ol>
+      </nav>
+
+      <!-- Header -->
+      <div class="dw-page-header mb-4">
+        <h2 class="mb-1">
+          {% if action == 'Add' %}
+            <i class="bi bi-plus-shield text-warning me-2"></i>Add New Asset
+          {% else %}
+            <i class="bi bi-pencil-square text-warning me-2"></i>Edit Asset
+          {% endif %}
+        </h2>
+        <p class="text-muted mb-0 small">
+          {% if action == 'Add' %}Content is encrypted automatically before being stored.
+          {% else %}Editing: <strong class="text-white">{{ asset.title }}</strong>{% endif %}
+        </p>
+      </div>
+
+      <!-- Form Card -->
+      <div class="dw-form-card">
+
+        <!-- Encryption Notice -->
+        <div class="alert mb-4" style="background:rgba(245,166,35,.08);border:1px solid rgba(245,166,35,.2);border-radius:8px;">
+          <div class="d-flex gap-2 align-items-center">
+            <i class="bi bi-shield-lock-fill text-warning fs-5"></i>
+            <div>
+              <strong class="text-warning d-block" style="font-size:.85rem;">End-to-End Encrypted</strong>
+              <span class="text-muted" style="font-size:.78rem;">
+                Text content is encrypted with Fernet before saving. Uploaded files are stored securely on the server.
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Non-field errors -->
+        {% if form.non_field_errors %}
+        <div class="alert alert-danger rounded-3 py-2 mb-3 small">
+          <i class="bi bi-exclamation-triangle-fill me-2"></i>
+          {% for error in form.non_field_errors %}{{ error }}{% endfor %}
+        </div>
+        {% endif %}
+
+        <form method="post" enctype="multipart/form-data" novalidate>
+          {% csrf_token %}
+
+          <!-- Title -->
+          <div class="mb-3">
+            <label class="form-label" for="id_title">
+              <i class="bi bi-tag me-1 text-warning"></i>Asset Title
+            </label>
+            <input type="text" name="title" id="id_title"
+                   class="form-control {% if form.title.errors %}is-invalid{% endif %}"
+                   placeholder="e.g. Gmail Password, Passport Scan, Dear John..."
+                   value="{{ form.title.value|default:'' }}"
+                   autofocus required />
+            {% if form.title.errors %}<div class="invalid-feedback">{{ form.title.errors.0 }}</div>{% endif %}
+          </div>
+
+          <!-- Category -->
+          <div class="mb-3">
+            <label class="form-label" for="id_category">
+              <i class="bi bi-folder2 me-1 text-warning"></i>Category
+            </label>
+            <select name="category" id="id_category" class="form-select">
+              {% for value, label in form.fields.category.choices %}
+              <option value="{{ value }}" {% if form.category.value == value %}selected{% endif %}>{{ label }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <!-- ────────────────────────────────────────────────────
+               CONTENT SECTION — switches dynamically via JS:
+                 • Password / Note  → encrypted textarea
+                 • Document         → file upload dropzone (+ optional text fallback)
+          ──────────────────────────────────────────────────── -->
+
+          <!-- TEXT CONTENT (shown for password & note; hidden for document when file chosen) -->
+          <div id="textSection" class="mb-4">
+            <label class="form-label d-flex justify-content-between" for="id_encrypted_data">
+              <span><i class="bi bi-file-lock2 me-1 text-warning"></i>Secure Content</span>
+              <span class="text-muted" id="textSectionHint" style="font-size:.75rem;">Will be encrypted on save</span>
+            </label>
+            <textarea name="encrypted_data" id="id_encrypted_data"
+                      class="form-control {% if form.encrypted_data.errors %}is-invalid{% endif %}"
+                      rows="6"
+                      placeholder="Enter your sensitive content here...">{{ form.encrypted_data.value|default:'' }}</textarea>
+            {% if form.encrypted_data.errors %}
+            <div class="invalid-feedback d-block">{{ form.encrypted_data.errors.0 }}</div>
+            {% endif %}
+            <div class="form-text text-muted" style="font-size:.75rem;" id="textSectionNote">
+              For passwords: paste the password. For notes: write freely.
+            </div>
+          </div>
+
+          <!-- FILE UPLOAD ZONE (shown only when category = document) -->
+          <div id="fileSection" class="mb-4 d-none">
+            <label class="form-label">
+              <i class="bi bi-cloud-upload me-1 text-warning"></i>Upload Document File
+            </label>
+
+            <!-- Dropzone -->
+            <label for="id_document_file" class="dw-dropzone" id="dropzone">
+              <div id="dropPlaceholder">
+                <i class="bi bi-cloud-arrow-up-fill dw-dropzone-icon"></i>
+                <p class="fw-semibold mb-1 mt-2">Drag & drop your file here</p>
+                <p class="text-muted small mb-3">— or click to browse —</p>
+                <span class="btn btn-outline-warning btn-sm">
+                  <i class="bi bi-folder2-open me-1"></i>Choose File
+                </span>
+                <p class="text-muted mt-3 mb-0" style="font-size:.72rem;">
+                  Accepts any file type · No size restriction
+                </p>
+              </div>
+              <!-- File selected state -->
+              <div id="dropSelected" class="d-none text-center">
+                <i class="bi bi-file-earmark-check-fill text-success" style="font-size:3rem;"></i>
+                <p class="fw-semibold mt-2 mb-1" id="selectedFileName">filename.pdf</p>
+                <p class="text-muted small mb-2" id="selectedFileSize"></p>
+                <button type="button" class="btn btn-outline-secondary btn-sm" id="clearFileBtn">
+                  <i class="bi bi-x-circle me-1"></i>Remove
+                </button>
+              </div>
+            </label>
+
+            <!-- Hidden actual file input -->
+            <input type="file" name="document_file" id="id_document_file"
+                   class="d-none" accept="*/*" />
+            {% if form.document_file.errors %}
+            <div class="text-danger small mt-1">{{ form.document_file.errors.0 }}</div>
+            {% endif %}
+
+            {% if action == 'Edit' and asset.document_file %}
+            <!-- Existing file notice -->
+            <div class="mt-2 p-2 rounded-2 d-flex align-items-center gap-2"
+                 style="background:var(--dw-surface-2);border:1px solid var(--dw-border);">
+              <i class="bi bi-paperclip text-warning"></i>
+              <span class="small text-muted">
+                Current file: <strong class="text-white">{{ asset.document_file.name|cut:"documents/" }}</strong>
+                — upload a new file above to replace it.
+              </span>
+            </div>
+            {% endif %}
+
+            <!-- OR divider + optional text content for documents -->
+            <div class="dw-divider my-3"><span>or type content instead</span></div>
+            <textarea name="encrypted_data" id="id_encrypted_data_doc"
+                      class="form-control"
+                      rows="3"
+                      placeholder="Type document content here (will be encrypted)...">{{ form.encrypted_data.value|default:'' }}</textarea>
+            <div class="form-text text-muted" style="font-size:.72rem;">Leave blank if uploading a file above.</div>
+          </div>
+
+          <!-- ── NOMINEE ASSIGNMENT ────────────────────────── -->
+          <div class="mb-4">
+            <label class="form-label d-flex align-items-center justify-content-between">
+              <span><i class="bi bi-people-fill me-1 text-warning"></i>Assign Nominees</span>
+              <a href="{% url 'vault:nominee_add' %}" class="text-warning text-decoration-none"
+                 style="font-size:.78rem;" target="_blank">
+                <i class="bi bi-plus-circle me-1"></i>Add Nominee
+              </a>
+            </label>
+
+            {% if form.nominees.field.queryset.exists %}
+              <div class="row g-2">
+                {% for choice in form.nominees %}
+                <div class="col-md-6">
+                  <label class="dw-nominee-check {% if choice.data.selected %}dw-nominee-check--selected{% endif %}"
+                         for="{{ choice.id_for_label }}">
+                    <div class="d-flex align-items-center gap-3">
+                      {{ choice.tag }}
+                      <div class="dw-avatar-sm">{{ choice.choice_label|first|upper }}</div>
+                      <div class="flex-grow-1 min-w-0">
+                        <div class="fw-semibold small text-truncate">{{ choice.choice_label }}</div>
+                      </div>
+                      <i class="bi bi-check-circle-fill dw-check-icon text-warning"></i>
+                    </div>
+                  </label>
+                </div>
+                {% endfor %}
+              </div>
+              <div class="form-text text-muted mt-2" style="font-size:.75rem;">
+                Selected nominees will receive access to this asset after the inactivity release.
+              </div>
+            {% else %}
+              <div class="p-3 rounded-3 text-center" style="background:var(--dw-surface-2);border:1px dashed var(--dw-border);">
+                <i class="bi bi-people text-muted d-block mb-1 fs-5"></i>
+                <span class="text-muted small">No nominees yet. </span>
+                <a href="{% url 'vault:nominee_add' %}" class="text-warning small text-decoration-none" target="_blank">
+                  Add a nominee →
+                </a>
+              </div>
+            {% endif %}
+          </div>
+
+          <!-- Actions -->
+          <div class="d-flex gap-3 mt-2">
+            <button type="submit" id="btn_save_asset" class="btn btn-warning fw-semibold px-4 dw-btn-glow">
+              <i class="bi bi-shield-check me-2"></i>
+              {% if action == 'Add' %}Save Securely{% else %}Update Asset{% endif %}
+            </button>
+            <a href="{% url 'vault:asset_list' %}" class="btn btn-outline-secondary px-4">Cancel</a>
+          </div>
+        </form>
+      </div>
+
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+const categorySelect  = document.getElementById('id_category');
+const textSection     = document.getElementById('textSection');
+const fileSection     = document.getElementById('fileSection');
+const dropzone        = document.getElementById('dropzone');
+const fileInput       = document.getElementById('id_document_file');
+const dropPlaceholder = document.getElementById('dropPlaceholder');
+const dropSelected    = document.getElementById('dropSelected');
+const selectedName    = document.getElementById('selectedFileName');
+const selectedSize    = document.getElementById('selectedFileSize');
+const clearBtn        = document.getElementById('clearFileBtn');
+
+// ── Switch content section when category changes ──
+function syncSections() {
+  const isDoc = categorySelect.value === 'document';
+  textSection.classList.toggle('d-none', isDoc);
+  fileSection.classList.toggle('d-none', !isDoc);
+}
+categorySelect.addEventListener('change', syncSections);
+syncSections(); // run on load
+
+// ── Disable hidden section fields before submit ───
+// This prevents hidden textareas from sending empty values
+// that would overwrite the visible section's content.
+document.querySelector('form').addEventListener('submit', () => {
+  const isDoc = categorySelect.value === 'document';
+
+  // Disable all inputs in the section that is NOT being used
+  if (isDoc) {
+    // Disable the text-only textarea in textSection
+    textSection.querySelectorAll('input,textarea,select').forEach(el => el.disabled = true);
+  } else {
+    // Disable file section inputs (file input + document fallback textarea)
+    fileSection.querySelectorAll('input,textarea,select').forEach(el => el.disabled = true);
+  }
+});
+
+// ── Open file picker when dropzone clicked ───────
+dropzone.addEventListener('click', e => {
+  if (e.target !== clearBtn && !clearBtn.contains(e.target)) {
+    fileInput.click();
+  }
+});
+
+// ── Drag & Drop handlers ─────────────────────────
+dropzone.addEventListener('dragover', e => {
+  e.preventDefault();
+  dropzone.classList.add('dw-dropzone--active');
+});
+['dragleave', 'dragend', 'drop'].forEach(ev =>
+  dropzone.addEventListener(ev, () => dropzone.classList.remove('dw-dropzone--active'))
+);
+dropzone.addEventListener('drop', e => {
+  e.preventDefault();
+  if (e.dataTransfer.files.length) {
+    setFile(e.dataTransfer.files[0]);
+  }
+});
+
+// ── File selected via input ───────────────────────
+fileInput.addEventListener('change', () => {
+  if (fileInput.files.length) setFile(fileInput.files[0]);
+});
+
+function setFile(file) {
+  selectedName.textContent = file.name;
+  selectedSize.textContent = formatBytes(file.size);
+  dropPlaceholder.classList.add('d-none');
+  dropSelected.classList.remove('d-none');
+  dropzone.style.borderColor = 'var(--dw-amber)';
+  const dt = new DataTransfer();
+  dt.items.add(file);
+  fileInput.files = dt.files;
+}
+
+// ── Clear file ────────────────────────────────────
+clearBtn.addEventListener('click', e => {
+  e.stopPropagation();
+  fileInput.value = '';
+  dropPlaceholder.classList.remove('d-none');
+  dropSelected.classList.add('d-none');
+  dropzone.style.borderColor = '';
+});
+
+function formatBytes(bytes) {
+  if (bytes < 1024) return bytes + ' B';
+  if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
+  return (bytes / 1048576).toFixed(1) + ' MB';
+}
+
+</script>
+{% endblock %}
