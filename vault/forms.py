@@ -9,6 +9,8 @@ Forms defined:
   - SettingsForm    → Update inactivity threshold and final message
 """
 
+import re
+
 from django import forms
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import PasswordChangeForm as DjangoPasswordChangeForm
@@ -31,8 +33,16 @@ class RegisterForm(forms.Form):
         return username
 
     def clean_email(self):
-        email = self.cleaned_data.get('email')
-        if User.objects.filter(email=email).exists():
+        email = self.cleaned_data.get('email', '').strip().lower()
+        if not email:
+            return email
+        # Enforce Gmail-only (backend security guard)
+        if not re.match(r'^[a-zA-Z0-9._%+\-]+@gmail\.com$', email, re.IGNORECASE):
+            raise forms.ValidationError(
+                "Please enter a valid Gmail address (e.g. you@gmail.com)."
+            )
+        # Check uniqueness
+        if User.objects.filter(email__iexact=email).exists():
             raise forms.ValidationError("An account with this email already exists.")
         return email
 
@@ -49,7 +59,12 @@ class RegisterForm(forms.Form):
 # LOGIN FORM
 # ─────────────────────────────────────────────────────────
 class LoginForm(forms.Form):
-    username = forms.CharField(max_length=150, label='Username')
+    # Single field accepts both username and email — detection is done in the view
+    identifier = forms.CharField(
+        max_length  = 254,
+        label       = 'Username or Email',
+        widget      = forms.TextInput(attrs={'autocomplete': 'username'}),
+    )
     password = forms.CharField(widget=forms.PasswordInput, label='Password')
 
 

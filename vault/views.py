@@ -152,11 +152,23 @@ def login_view(request):
     login_error = False
 
     if request.method == 'POST' and form.is_valid():
-        user = authenticate(
-            request,
-            username = form.cleaned_data['username'],
-            password = form.cleaned_data['password'],
-        )
+        identifier = form.cleaned_data['identifier'].strip()
+        password   = form.cleaned_data['password']
+
+        # Auto-detect: email address or username?
+        if '@' in identifier:
+            # Look up the username that owns this email
+            try:
+                user_obj = User.objects.get(email__iexact=identifier)
+                username = user_obj.username
+            except User.DoesNotExist:
+                username = identifier        # Will fail authenticate() — intentional
+            except User.MultipleObjectsReturned:
+                username = identifier        # Fail safely on duplicate emails
+        else:
+            username = identifier            # Treat as plain username
+
+        user = authenticate(request, username=username, password=password)
         if user is not None:
             login(request, user)
             messages.success(request, f'Welcome back, {user.username}!')
@@ -170,9 +182,58 @@ def login_view(request):
 def logout_view(request):
     if request.user.is_authenticated:
         log_activity(request.user, 'Logged out')
+
     logout(request)
-    messages.info(request, 'You have been logged out.')
-    return redirect('vault:home')
+    request.session.flush()
+
+    response = redirect('vault:home')
+    response['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0, private'
+    response['Pragma']  = 'no-cache'
+    response['Expires'] = '0'
+    return response
+
+
+@login_required
+def delete_account(request):
+    """
+    Permanently deletes the authenticated user's account and ALL associated
+    data: UserProfile, DigitalAssets, Nominees, ActivityLogs, ReleaseRequests.
+
+    Requires POST + correct password confirmation.
+    Logs out and flushes session BEFORE deletion so no stale session remains.
+    Django's CASCADE foreign keys handle the data cleanup automatically.
+    """
+    if request.method != 'POST':
+        return redirect('vault:settings')
+
+    confirm_password = request.POST.get('confirm_password', '').strip()
+    user = request.user   # Keep reference — logout() will change request.user
+
+    # Verify the user knows their own password before we destroy anything
+    if not user.check_password(confirm_password):
+        messages.error(
+            request,
+            'Incorrect password. Your account was NOT deleted. Please try again.'
+        )
+        return redirect('vault:settings')
+
+    # Record the deletion event (deleted with the user, but good for any server-side logs)
+    try:
+        ActivityLog.objects.create(user=user, action='Account permanently deleted by user')
+    except Exception:
+        pass
+
+    # Logout + flush session BEFORE deleting the user object
+    logout(request)
+    request.session.flush()
+
+    # Delete the user — Django CASCADE removes:
+    #   UserProfile, DigitalAsset(s), Nominee(s), ActivityLog(s), ReleaseRequest(s)
+    user.delete()
+
+    response = redirect('vault:home')
+    response['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0, private'
+    return response
 
 
 # -----------------------------------------------------------------

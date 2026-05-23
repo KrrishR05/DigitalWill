@@ -33,18 +33,19 @@
           <form method="post" novalidate>
             {% csrf_token %}
 
-            <!-- Username -->
+            <!-- Username or Email -->
             <div class="mb-3">
-              <label class="form-label" for="id_username">
-                <i class="bi bi-person me-1 text-warning"></i>Username
+              <label class="form-label" for="id_identifier">
+                <i class="bi bi-person me-1 text-warning"></i>Username or Email
               </label>
               <input type="text"
-                     name="username"
-                     id="id_username"
+                     name="identifier"
+                     id="id_identifier"
                      class="form-control"
-                     placeholder="Enter your username"
-                     value="{{ form.username.value|default:'' }}"
+                     placeholder="Enter your username or email"
+                     value="{{ form.identifier.value|default:'' }}"
                      autofocus
+                     autocomplete="username"
                      required />
             </div>
 

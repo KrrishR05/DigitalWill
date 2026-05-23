@@ -474,3 +474,23 @@ body.dw-body {
   .dw-hero { padding: 3rem 0; min-height: auto; }
   .dw-stat-number { font-size: 1.8rem; }
 }
+
+/* ─── Bootstrap Modal — dark theme overrides ─────────────── */
+/* Ensure the backdrop is visible on the dark background       */
+.modal-backdrop {
+  background-color: #000 !important;
+  opacity: .75 !important;
+}
+/* Solid modal surface — prevents see-through on dark themes   */
+.modal-content {
+  background: var(--dw-surface) !important;
+  color: var(--dw-text) !important;
+  border: 1px solid var(--dw-border);
+}
+.modal-header {
+  background: var(--dw-surface-2) !important;
+  border-bottom-color: var(--dw-border) !important;
+  color: var(--dw-text) !important;
+}
+.modal-body  { background: var(--dw-surface) !important; color: var(--dw-text) !important; }
+.modal-footer { background: var(--dw-surface-2) !important; border-top-color: var(--dw-border) !important; }

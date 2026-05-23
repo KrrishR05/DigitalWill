@@ -30,9 +30,10 @@ urlpatterns = [
     path('', views.home, name='home'),
 
     # ── Authentication ─────────────────────────────
-    path('auth/register/', views.register_view, name='register'),
-    path('auth/login/',    views.login_view,    name='login'),
-    path('auth/logout/',   views.logout_view,   name='logout'),
+    path('auth/register/',        views.register_view,   name='register'),
+    path('auth/login/',           views.login_view,      name='login'),
+    path('auth/logout/',          views.logout_view,     name='logout'),
+    path('auth/delete-account/',  views.delete_account,  name='delete_account'),
 
     # ── Dashboard ──────────────────────────────────
     path('dashboard/', views.dashboard, name='dashboard'),

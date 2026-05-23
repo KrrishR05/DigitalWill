@@ -54,18 +54,22 @@
             <!-- Email -->
             <div class="mb-3">
               <label class="form-label" for="id_email">
-                <i class="bi bi-envelope me-1 text-warning"></i>Email Address
+                <i class="bi bi-envelope me-1 text-warning"></i>Gmail Address
               </label>
               <input type="email"
                      name="email"
                      id="id_email"
                      class="form-control {% if form.email.errors %}is-invalid{% endif %}"
-                     placeholder="you@example.com"
+                     placeholder="you@gmail.com"
                      value="{{ form.email.value|default:'' }}"
                      required />
-              {% if form.email.errors %}
-              <div class="invalid-feedback">{{ form.email.errors.0 }}</div>
-              {% endif %}
+              <!-- Always-present feedback div — populated by JS or server -->
+              <div class="invalid-feedback" id="email-feedback">
+                {% if form.email.errors %}{{ form.email.errors.0 }}{% else %}Please enter a valid Gmail address (e.g. you@gmail.com).{% endif %}
+              </div>
+              <div class="form-text text-muted" style="font-size:.73rem;">
+                <i class="bi bi-info-circle me-1"></i>Only Gmail addresses are accepted (e.g. you@gmail.com).
+              </div>
             </div>
 
             <!-- Password -->
@@ -140,7 +144,7 @@
 
 {% block extra_scripts %}
 <script>
-  // Toggle password visibility
+  // ── Toggle password visibility ──────────────────────────────
   document.querySelectorAll('.toggle-pw').forEach(btn => {
     btn.addEventListener('click', () => {
       const input = document.getElementById(btn.dataset.target);
@@ -153,6 +157,27 @@
         icon.className = 'bi bi-eye';
       }
     });
+  });
+
+  // ── Real-time Gmail validation ──────────────────────────────
+  const emailInput    = document.getElementById('id_email');
+  const emailFeedback = document.getElementById('email-feedback');
+  const gmailRegex    = /^[a-zA-Z0-9._%+\-]+@gmail\.com$/i;
+
+  emailInput.addEventListener('input', function () {
+    const val = this.value.trim();
+    if (val === '') {
+      this.classList.remove('is-invalid', 'is-valid');
+      return;
+    }
+    if (gmailRegex.test(val)) {
+      this.classList.remove('is-invalid');
+      this.classList.add('is-valid');
+    } else {
+      this.classList.add('is-invalid');
+      this.classList.remove('is-valid');
+      emailFeedback.textContent = 'Please enter a valid Gmail address (e.g. you@gmail.com).';
+    }
   });
 </script>
 {% endblock %}

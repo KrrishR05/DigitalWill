@@ -56,13 +56,17 @@ INSTALLED_APPS = [
 # ─────────────────────────────────────────
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    # WhiteNoise MUST be immediately after SecurityMiddleware
+    # It serves collected static files directly in production without a separate web server
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',   # CSRF protection auto-enabled
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'vault.middleware.UpdateLastActivityMiddleware',  # Tracks user activity
+    'vault.middleware.UpdateLastActivityMiddleware',   # Tracks user activity
+    'vault.middleware.NoCacheAuthenticatedMiddleware', # SECURITY: prevents back-button cache leak
 ]
 
 ROOT_URLCONF = 'digital_will.urls'
@@ -130,8 +134,30 @@ STATIC_URL = '/static/'
 # Project-level static files (shared CSS, JS, images)
 STATICFILES_DIRS = [BASE_DIR / 'static']
 
-# Where collectstatic gathers files for production
+# Where collectstatic gathers ALL files for production
 STATIC_ROOT = BASE_DIR / 'staticfiles'
+
+# WhiteNoise static file storage:
+#   Production (DEBUG=False): CompressedManifestStaticFilesStorage
+#     - Compresses files (gzip/brotli) for faster delivery
+#     - Fingerprints filenames (main.abc123.css) for cache-busting
+#     - Requires 'python manage.py collectstatic' to be run at deploy time
+#     - build.sh already does this automatically on Render
+#   Development (DEBUG=True): Django's default StaticFilesStorage
+#     - Django dev server serves from STATICFILES_DIRS directly
+#     - No collectstatic needed locally
+STORAGES = {
+    "default": {
+        "BACKEND": "django.core.files.storage.FileSystemStorage",
+    },
+    "staticfiles": {
+        "BACKEND": (
+            "whitenoise.storage.CompressedManifestStaticFilesStorage"
+            if not DEBUG
+            else "django.contrib.staticfiles.storage.StaticFilesStorage"
+        ),
+    },
+}
 
 
 # ─────────────────────────────────────────
