@@ -197,12 +197,13 @@ LOGOUT_REDIRECT_URL = '/'            # After logout
 # ─────────────────────────────────────────
 EMAIL_BACKEND       = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST          = 'smtp.gmail.com'
-EMAIL_PORT          = 587
-EMAIL_USE_TLS       = True
+EMAIL_PORT          = 465          # SSL — more reliable than 587 on Render's network
+EMAIL_USE_SSL       = True         # Direct SSL connection (replaces STARTTLS)
+EMAIL_USE_TLS       = False        # Must be False when EMAIL_USE_SSL is True
 EMAIL_HOST_USER     = os.environ.get('EMAIL_HOST_USER',     'your_gmail@gmail.com')
 EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', 'your_16_char_app_password')
 DEFAULT_FROM_EMAIL  = os.environ.get('EMAIL_HOST_USER',     'your_gmail@gmail.com')
-EMAIL_TIMEOUT       = 30   # seconds — prevents SMTP from hanging on slow connections
+EMAIL_TIMEOUT       = 30           # seconds — prevents SMTP from hanging on slow connections
 
 
 # ─────────────────────────────────────────
