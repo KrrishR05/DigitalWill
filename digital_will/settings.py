@@ -36,6 +36,14 @@ DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 # For local development, '*' is fine.
 ALLOWED_HOSTS = ['*']
 
+# Render (and most cloud hosts) terminate SSL at their load balancer and
+# forward requests to Django over plain HTTP internally.
+# These two settings tell Django to trust the X-Forwarded-Proto header
+# so request.scheme returns 'https' instead of 'http' in production.
+# This ensures OTP email verification links use https:// not http://
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+USE_X_FORWARDED_HOST    = True
+
 
 # ─────────────────────────────────────────
 # INSTALLED APPS
