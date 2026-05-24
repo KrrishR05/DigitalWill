@@ -5,8 +5,6 @@ distlib==0.4.0
 Django==5.2.12
 filelock==3.20.3
 gunicorn==26.0.0
-numpy==2.2.6
-opencv-python==4.13.0.90
 packaging==26.2
 platformdirs==4.5.1
 pycparser==3.0
