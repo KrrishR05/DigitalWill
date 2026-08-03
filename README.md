@@ -2,6 +2,9 @@
 
 A secure Django web application that acts as a **digital will** — allowing users to store encrypted sensitive assets (passwords, documents, personal notes) and automatically release them to designated nominees after a period of inactivity.
 
+### Live Deployment :
+http://digitalwill.onrender.com/
+
 ---
 
 ## Features
